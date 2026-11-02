@@ -1,0 +1,14 @@
+# macOS
+.DS_Store
+
+# Xcode: per-user state and build output
+xcuserdata/
+DerivedData/
+build/
+
+# Node
+node_modules/
+.env
+
+# Workflow engine run state
+operations/runs/
