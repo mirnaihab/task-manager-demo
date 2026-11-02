@@ -1,0 +1,138 @@
+{
+  "$schema": "https://forgie.ai/config.json",
+
+  "instructions": ["AGENTS.md"],
+
+  // The engine package sits one folder up. Replace this with the published
+  // specifier once you install it, for example:
+  //   "plugin": ["forgie-workflow-engine@1.0.0"]
+  "plugin": ["./node_modules/forgie-workflow-engine/dist/plugin.js"],
+
+  "agent": {
+    // ---- primary ----------------------------------------------------------
+    "orchestrator": {
+      "mode": "primary",
+      "model": "myprovider/openai.gpt-5.6-terra",
+      "description": "User-facing controller. Answers simple requests, starts the right workflow, shows blocking questions to the user and sends their answers back. It never calls subagents directly and never schedules work itself.",
+      "tools": {
+        "write": false,
+        "edit": false,
+        "patch": false,
+        "task": false,
+        "bash": true,
+        "read": true,
+        "grep": true,
+        "glob": true,
+        "list": true
+      },
+      "permission": {
+        "edit": "deny"
+      }
+    },
+
+    // ---- workflow agents --------------------------------------------------
+    "scoping": {
+      "mode": "subagent",
+      "model": "myprovider/bedrock.anthropic.claude-sonnet-5-5",
+      "description": "Solution architect. Produces the high level design and the roadmap phases for a new project, a large feature or an architecture question.",
+      "tools": {
+        "task": false
+      }
+    },
+
+    "planner": {
+      "mode": "subagent",
+      "model": "myprovider/bedrock.anthropic.claude-sonnet-5-5",
+      "description": "Implementation planner. Turns a roadmap phase, a bug or a small feature into an approved plan. Writes plans only, never code.",
+      "tools": {
+        "task": false
+      }
+    },
+
+    "builder": {
+      "mode": "subagent",
+      "model": "myprovider/bedrock.anthropic.claude-sonnet-5-5",
+      "description": "Implementation agent. Executes an approved plan exactly. The workflow decides when it runs.",
+      "tools": {
+        "task": false
+      },
+      "permission": {
+        "edit": "allow"
+      }
+    },
+
+    "analyser": {
+      "mode": "subagent",
+      "model": "myprovider/bedrock.anthropic.claude-sonnet-5-5",
+      "description": "Code reviewer. The delivery workflows run it after every build. Read-only on source.",
+      "tools": {
+        "write": false,
+        "edit": false,
+        "patch": false,
+        "task": false
+      },
+      "permission": {
+        "edit": "deny",
+        "bash": "allow"
+      }
+    },
+
+    "tester": {
+      "mode": "subagent",
+      "model": "myprovider/bedrock.anthropic.claude-sonnet-5-5",
+      "description": "End-to-end and integration test agent. Runs the configured test suites and reports failures.",
+      "tools": {
+        "task": false
+      },
+      "permission": {
+        "edit": "allow"
+      }
+    },
+
+    "documentation": {
+      "mode": "subagent",
+      "model": "myprovider/bedrock.anthropic.claude-sonnet-5-5",
+      "description": "Archive step. Consolidates the operation into docs and refreshes README, AGENTS.md, PRD and ADRs.",
+      "tools": {
+        "task": false
+      },
+      "permission": {
+        "edit": "allow"
+      }
+    }
+  },
+
+  // Every command starts a workflow. No command reaches a subagent directly.
+  "command": {
+    "feature": {
+      "description": "Scope, plan, build, review and document a new project or large feature",
+      "agent": "orchestrator",
+      "template": "Start the \"feature\" workflow with workflow_start. Pass this request unchanged.\n\n$ARGUMENTS"
+    },
+    "implement": {
+      "description": "Plan, build, review and document a bug fix or small feature",
+      "agent": "orchestrator",
+      "template": "Start the \"implement\" workflow with workflow_start. Pass this request unchanged.\n\n$ARGUMENTS"
+    },
+    "review": {
+      "description": "Review the current changes",
+      "agent": "orchestrator",
+      "template": "Start the \"review\" workflow with workflow_start. Pass this request unchanged.\n\n$ARGUMENTS"
+    },
+    "docs": {
+      "description": "Refresh the project documentation",
+      "agent": "orchestrator",
+      "template": "Start the \"docs\" workflow with workflow_start. Pass this request unchanged.\n\n$ARGUMENTS"
+    },
+    "status": {
+      "description": "Report the state of a workflow run",
+      "agent": "orchestrator",
+      "template": "Call workflow_status for this run id and summarize it for the user. Do not start new work.\n\n$ARGUMENTS"
+    },
+    "cancel": {
+      "description": "Cancel a workflow run",
+      "agent": "orchestrator",
+      "template": "Call workflow_cancel for this run id and report the result.\n\n$ARGUMENTS"
+    }
+  }
+}

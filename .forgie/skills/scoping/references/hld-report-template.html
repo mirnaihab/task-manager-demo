@@ -1,0 +1,1420 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HLD Report — [PROJECT NAME]</title>
+
+<!--
+  HLD REPORT TEMPLATE (HTML) — visual twin of the `scoping` markdown template.
+
+  HOW TO USE
+  1. Copy this file to `operations/specs/nnn_name/hld.html`.
+  2. Replace every [PLACEHOLDER] and every `.todo` block.
+  3. Keep the section ids. The sidebar, the scrollspy, and the ID search read them.
+  4. Delete rows and cards you do not need. Do not delete a whole pillar.
+     Write "N/A — [reason]" instead.
+  5. Diagrams: edit the text inside `<pre class="mermaid">`. Nothing else.
+     Escape any markup in a label. Write &lt;br/&gt; for a line break, not <br/>.
+  6. Charts: edit the `data` object inside each `chart-*` script block.
+  7. The file needs no build step. Open it in any browser.
+
+  ID PREFIXES: PRE- (presentation), BIZ- (business), CTX- (context),
+  COM- (communication), PRC- (process). Reference them across documents.
+
+  OFFLINE USE: the two CDN scripts at the end need network access on first load.
+  For an air-gapped report, download them next to this file and change the src.
+-->
+
+<style>
+  :root {
+    --font-sans: ui-sans-serif, -apple-system, "Segoe UI", Roboto, Inter, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
+    --radius: 10px;
+    --sidebar-w: 280px;
+  }
+
+  html[data-theme="dark"] {
+    --bg: #0d1117;
+    --bg-alt: #161b22;
+    --panel: #11161d;
+    --border: #2a323d;
+    --text: #d7dde5;
+    --text-dim: #8b95a1;
+    --accent: #4c9aff;
+    --accent-soft: rgba(76, 154, 255, 0.14);
+    --ok: #3fb950;
+    --warn: #d29922;
+    --risk: #f85149;
+    --info: #a371f7;
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  }
+
+  html[data-theme="light"] {
+    --bg: #ffffff;
+    --bg-alt: #f6f8fa;
+    --panel: #ffffff;
+    --border: #d8dee4;
+    --text: #1f2328;
+    --text-dim: #636c76;
+    --accent: #0969da;
+    --accent-soft: rgba(9, 105, 218, 0.10);
+    --ok: #1a7f37;
+    --warn: #9a6700;
+    --risk: #cf222e;
+    --info: #8250df;
+    --shadow: 0 1px 3px rgba(31, 35, 40, 0.12);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.65;
+  }
+
+  /* ---------- layout ---------- */
+  .layout { display: flex; align-items: flex-start; }
+
+  #sidebar {
+    width: var(--sidebar-w);
+    flex: 0 0 var(--sidebar-w);
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    overflow-y: auto;
+    background: var(--bg-alt);
+    border-right: 1px solid var(--border);
+    padding: 20px 14px 40px;
+  }
+
+  #sidebar .brand {
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 14px;
+  }
+
+  #toc { list-style: none; margin: 0; padding: 0; }
+  #toc li { margin: 1px 0; }
+  #toc a {
+    display: block;
+    padding: 5px 10px;
+    border-radius: 6px;
+    border-left: 2px solid transparent;
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 13.5px;
+  }
+  #toc a:hover { background: var(--accent-soft); color: var(--text); }
+  #toc a.active { color: var(--accent); border-left-color: var(--accent); background: var(--accent-soft); }
+  #toc a.pillar { font-weight: 600; color: var(--text); margin-top: 10px; }
+
+  main {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 1180px;
+    padding: 28px 40px 120px;
+  }
+
+  /* ---------- header ---------- */
+  header.doc {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 20px;
+    margin-bottom: 28px;
+  }
+  header.doc h1 { margin: 0 0 6px; font-size: 30px; letter-spacing: -0.02em; }
+  header.doc .subtitle { color: var(--text-dim); margin: 0 0 16px; }
+
+  .meta-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .meta-row .chip {
+    background: var(--bg-alt);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 3px 12px;
+    font-size: 12.5px;
+    color: var(--text-dim);
+  }
+  .meta-row .chip b { color: var(--text); font-weight: 600; }
+
+  .toolbar {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin: 18px 0 0;
+    flex-wrap: wrap;
+  }
+  .toolbar input[type="search"] {
+    flex: 1 1 260px;
+    background: var(--bg-alt);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    padding: 8px 12px;
+    font-family: var(--font-sans);
+    font-size: 14px;
+  }
+  .toolbar button {
+    background: var(--bg-alt);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    padding: 8px 14px;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .toolbar button:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ---------- sections ---------- */
+  section { scroll-margin-top: 20px; margin-bottom: 40px; }
+
+  h2 {
+    font-size: 21px;
+    margin: 0 0 4px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    letter-spacing: -0.01em;
+  }
+  h2 .num { color: var(--accent); font-family: var(--font-mono); font-size: 16px; margin-right: 8px; }
+  h3 { font-size: 16px; margin: 26px 0 8px; }
+  h4 { font-size: 14px; margin: 18px 0 6px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em; }
+  .hint { color: var(--text-dim); font-size: 13.5px; margin: 6px 0 16px; }
+
+  /* ---------- cards ---------- */
+  .grid { display: grid; gap: 14px; margin: 14px 0; }
+  .grid.c2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+  .grid.c3 { grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+  .grid.c4 { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    box-shadow: var(--shadow);
+  }
+  .card h4 { margin-top: 0; }
+  .card p:last-child { margin-bottom: 0; }
+
+  .kpi { text-align: center; }
+  .kpi .value { font-size: 26px; font-weight: 700; color: var(--accent); line-height: 1.2; }
+  .kpi .label { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em; }
+
+  .card.ok { border-left: 3px solid var(--ok); }
+  .card.warn { border-left: 3px solid var(--warn); }
+  .card.risk { border-left: 3px solid var(--risk); }
+  .card.info { border-left: 3px solid var(--info); }
+
+  /* ---------- tables ---------- */
+  .table-wrap { overflow-x: auto; margin: 12px 0; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { background: var(--bg-alt); font-weight: 600; font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-dim); }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: var(--accent-soft); }
+
+  /* ---------- badges ---------- */
+  .id {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-radius: 5px;
+    padding: 1px 7px;
+    white-space: nowrap;
+  }
+  .tag {
+    display: inline-block;
+    font-size: 11.5px;
+    border-radius: 5px;
+    padding: 1px 8px;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+  }
+  .tag.ok { color: var(--ok); border-color: var(--ok); }
+  .tag.warn { color: var(--warn); border-color: var(--warn); }
+  .tag.risk { color: var(--risk); border-color: var(--risk); }
+  .tag.info { color: var(--info); border-color: var(--info); }
+
+  /* ---------- code and gherkin ---------- */
+  pre, code { font-family: var(--font-mono); font-size: 13px; }
+  pre.code {
+    background: var(--bg-alt);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    overflow-x: auto;
+    margin: 10px 0;
+  }
+  .gherkin {
+    background: var(--bg-alt);
+    border-left: 3px solid var(--info);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 12px 16px;
+    margin: 10px 0;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    white-space: pre-wrap;
+  }
+  .gherkin b { color: var(--info); font-weight: 600; }
+
+  /* ---------- diagrams and charts ---------- */
+  figure.diagram {
+    margin: 16px 0;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+  }
+  figure.diagram figcaption {
+    font-size: 12.5px;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  pre.mermaid { background: none; border: none; padding: 0; text-align: center; margin: 0; }
+
+  .chart-box { position: relative; height: 300px; }
+
+  /* ---------- collapsible ---------- */
+  details {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0 16px;
+    margin: 12px 0;
+  }
+  details[open] { padding-bottom: 12px; }
+  summary { cursor: pointer; padding: 12px 0; font-weight: 600; font-size: 14px; }
+  summary::marker { color: var(--accent); }
+
+  /* ---------- fill markers ---------- */
+  .todo {
+    color: var(--warn);
+    background: rgba(210, 153, 34, 0.10);
+    border: 1px dashed var(--warn);
+    border-radius: 5px;
+    padding: 1px 7px;
+    font-size: 12.5px;
+    font-family: var(--font-mono);
+  }
+
+  ul.tight { margin: 8px 0; padding-left: 20px; }
+  ul.tight li { margin: 3px 0; }
+
+  .hidden-by-filter { display: none !important; }
+
+  /* ---------- print ---------- */
+  @media print {
+    #sidebar, .toolbar, #themeToggle { display: none !important; }
+    body { background: #fff; color: #000; font-size: 11pt; }
+    main { max-width: none; padding: 0; }
+    section { break-inside: avoid; page-break-inside: avoid; }
+    details { break-inside: avoid; }
+    figure.diagram, .card, table { border-color: #999; }
+  }
+
+  @media (max-width: 900px) {
+    #sidebar { display: none; }
+    main { padding: 20px; }
+  }
+</style>
+</head>
+
+<body>
+<div class="layout">
+
+  <!-- ============================================================
+       SIDEBAR — built from the section ids. Do not hand-edit.
+       ============================================================ -->
+  <nav id="sidebar" aria-label="Document sections">
+    <div class="brand">HLD Report</div>
+    <ul id="toc"></ul>
+  </nav>
+
+  <main>
+
+    <!-- ============================================================
+         HEADER
+         ============================================================ -->
+    <header class="doc">
+      <h1>[PROJECT NAME]</h1>
+      <p class="subtitle">[One-line description of what this system does.]</p>
+      <div class="meta-row">
+        <span class="chip">Version <b>[0.1.0]</b></span>
+        <span class="chip">Date <b>[YYYY-MM-DD]</b></span>
+        <span class="chip">Status <b>[Draft | Review | Approved]</b></span>
+        <span class="chip">Owner <b>[Team or role]</b></span>
+        <span class="chip">Architecture <b>[Modular monolith | Microservices | Pipeline]</b></span>
+      </div>
+      <div class="toolbar">
+        <input type="search" id="filter" placeholder="Filter by ID or text (for example: BIZ-, OAuth, Postgres)" aria-label="Filter content">
+        <button id="expandAll" type="button">Expand all</button>
+        <button id="collapseAll" type="button">Collapse all</button>
+        <button id="themeToggle" type="button">Light mode</button>
+        <button id="printBtn" type="button">Print / PDF</button>
+      </div>
+    </header>
+
+    <!-- ============================================================
+         EXECUTIVE SUMMARY
+         ============================================================ -->
+    <section id="summary" data-nav="Executive Summary" data-pillar="true">
+      <h2>Executive Summary</h2>
+      <p class="hint">A reader must understand the system in 60 seconds. Keep every card to two sentences.</p>
+
+      <div class="grid c4">
+        <div class="card kpi"><div class="value">[N]</div><div class="label">[KPI 1 name]</div></div>
+        <div class="card kpi"><div class="value">[N]</div><div class="label">[KPI 2 name]</div></div>
+        <div class="card kpi"><div class="value">[N]</div><div class="label">[KPI 3 name]</div></div>
+        <div class="card kpi"><div class="value">[N]</div><div class="label">[KPI 4 name]</div></div>
+      </div>
+
+      <div class="grid c2">
+        <div class="card risk">
+          <h4>Problem</h4>
+          <p><span class="todo">Fill</span> One or two sentences on the pain point.</p>
+        </div>
+        <div class="card ok">
+          <h4>Proposed solution</h4>
+          <p><span class="todo">Fill</span> One or two sentences on the fix.</p>
+        </div>
+        <div class="card info">
+          <h4>Business context</h4>
+          <p><span class="todo">Fill</span> Why now. Who asked. What it unblocks.</p>
+        </div>
+        <div class="card">
+          <h4>Objective</h4>
+          <p><span class="todo">Fill</span> The measurable outcome this project delivers.</p>
+        </div>
+      </div>
+
+      <h3>Success criteria</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th style="width:90px">ID</th><th>Criterion</th><th>Metric</th><th>Target</th><th>How measured</th></tr></thead>
+          <tbody>
+            <tr><td><span class="id">KPI-001</span></td><td>[Criterion]</td><td>[Metric]</td><td>[Target]</td><td>[Source]</td></tr>
+            <tr><td><span class="id">KPI-002</span></td><td>[Criterion]</td><td>[Metric]</td><td>[Target]</td><td>[Source]</td></tr>
+            <tr><td><span class="id">KPI-003</span></td><td>[Criterion]</td><td>[Metric]</td><td>[Target]</td><td>[Source]</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Tech stack</h3>
+      <div class="grid c3">
+        <div class="card"><h4>Frontend</h4><p>[Framework, styling, state]</p></div>
+        <div class="card"><h4>Backend</h4><p>[Runtime, framework, ORM]</p></div>
+        <div class="card"><h4>Data</h4><p>[Primary store, cache, search]</p></div>
+        <div class="card"><h4>Infrastructure</h4><p>[Cloud, containers, orchestration]</p></div>
+        <div class="card"><h4>External services</h4><p>[Auth, payments, LLM, email]</p></div>
+        <div class="card"><h4>Tooling</h4><p>[CI, tests, lint, observability]</p></div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SCOPE
+         ============================================================ -->
+    <section id="scope" data-nav="Scope" data-pillar="true">
+      <h2>Scope</h2>
+      <p class="hint">Draw the boundary before the design. Anything not listed as in scope is out of scope.</p>
+
+      <div class="grid c2">
+        <div class="card ok">
+          <h4>In scope</h4>
+          <ul class="tight">
+            <li>[Capability the system delivers]</li>
+            <li>[Capability the system delivers]</li>
+          </ul>
+        </div>
+        <div class="card risk">
+          <h4>Out of scope</h4>
+          <ul class="tight">
+            <li>[Explicitly excluded, with the reason]</li>
+            <li>[Deferred to a later phase]</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3>Target users</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Persona</th><th>Type</th><th>Needs</th><th>Pain point</th><th>Can do</th><th>Volume</th></tr></thead>
+          <tbody>
+            <tr><td>[Persona]</td><td><span class="tag ok">Primary</span></td><td>[Need]</td><td>[Pain]</td><td>[Permissions]</td><td>[Total / concurrent]</td></tr>
+            <tr><td>[Persona]</td><td><span class="tag">Secondary</span></td><td>[Need]</td><td>[Pain]</td><td>[Permissions]</td><td>[Total / concurrent]</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Roles and permissions</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Role</th><th>Read</th><th>Write</th><th>Admin</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td>[Role]</td><td>[Scope]</td><td>[Scope]</td><td>[Yes / No]</td><td>[Notes]</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Roadmap</h3>
+      <figure class="diagram">
+        <figcaption>Phase timeline</figcaption>
+        <pre class="mermaid">
+gantt
+    title Delivery roadmap
+    dateFormat YYYY-MM-DD
+    axisFormat %b %d
+    section Phase 1 — Foundation
+    Data model and migrations   :p1a, 2026-01-05, 10d
+    Core API surface            :p1b, after p1a, 12d
+    section Phase 2 — Core features
+    Feature A                   :p2a, after p1b, 14d
+    Feature B                   :p2b, after p2a, 10d
+    section Phase 3 — Hardening
+    Observability and alerts    :p3a, after p2b, 7d
+    Load and security testing   :p3b, after p3a, 7d
+        </pre>
+      </figure>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th style="width:70px">Phase</th><th>Title</th><th>Description</th><th>Key features</th><th>Exit criteria</th></tr></thead>
+          <tbody>
+            <tr><td><span class="id">P1</span></td><td>[Title]</td><td>[One sentence]</td><td>[Features]</td><td>[Done means]</td></tr>
+            <tr><td><span class="id">P2</span></td><td>[Title]</td><td>[One sentence]</td><td>[Features]</td><td>[Done means]</td></tr>
+            <tr><td><span class="id">P3</span></td><td>[Title]</td><td>[One sentence]</td><td>[Features]</td><td>[Done means]</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="grid c2">
+
+        <figure class="diagram">
+          <figcaption>Risk matrix — likelihood against impact</figcaption>
+          <div class="chart-box"><canvas id="chartRisk"></canvas></div>
+        </figure>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         PILLAR 1 — PRESENTATION
+         ============================================================ -->
+    <section id="presentation" data-nav="1 · Presentation" data-pillar="true">
+      <h2><span class="num">1</span>Presentation Layer</h2>
+      <p class="hint">How the system is triggered, what it exposes, and how it returns output.</p>
+
+      <h3>1.1 Entry points</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th style="width:130px">ID</th><th>Trigger</th><th>Description</th><th>Actor</th><th>Frequency</th></tr></thead>
+          <tbody>
+            <tr><td><span class="id">PRE-EP-001</span></td><td>HTTP request</td><td>[Description]</td><td>[Who or what]</td><td>[Rate]</td></tr>
+            <tr><td><span class="id">PRE-EP-002</span></td><td>Cron schedule</td><td>[Description]</td><td>Scheduler</td><td>[Cron expression]</td></tr>
+            <tr><td><span class="id">PRE-EP-003</span></td><td>Event subscription</td><td>[Description]</td><td>[Producer]</td><td>[Rate]</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>1.2 Interfaces and contracts</h3>
+
+      <details open>
+        <summary>API contract — [endpoint name]</summary>
+        <pre class="code">method: GET | POST | PUT | DELETE | PATCH
+path: /api/v1/[resource]
+request:
+  type: JSON
+  schema:
+    field_a: string   # required
+    field_b: number   # optional, default 0
+response:
+  200:
+    id: string
+    created_at: ISO-8601 timestamp
+  400: { error: string, code: string }
+  401: { error: "unauthorized" }
+auth:
+  type: JWT
+  scope: [required scope]
+rate_limit: [N requests per minute per key]
+pagination: cursor | offset
+idempotency: [key header, or "not applicable"]</pre>
+      </details>
+
+      <details>
+        <summary>Error response convention</summary>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Status</th><th>Meaning</th><th>Body shape</th><th>Retryable</th></tr></thead>
+            <tbody>
+              <tr><td>400</td><td>Validation failed</td><td>{ error, code, fields }</td><td><span class="tag risk">No</span></td></tr>
+              <tr><td>401</td><td>Missing or bad credentials</td><td>{ error, code }</td><td><span class="tag risk">No</span></td></tr>
+              <tr><td>429</td><td>Rate limited</td><td>{ error, retry_after }</td><td><span class="tag ok">Yes</span></td></tr>
+              <tr><td>503</td><td>Dependency unavailable</td><td>{ error, code }</td><td><span class="tag ok">Yes</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </details>
+
+      <h4>UI interfaces</h4>
+      <div class="grid c3">
+        <div class="card"><h4>CSS framework</h4><p>[Tailwind | Bootstrap | CSS Modules]</p></div>
+        <div class="card"><h4>Component library</h4><p>[shadcn/ui | Radix | MUI]</p></div>
+        <div class="card"><h4>Design system</h4><p>[Reference DESIGN.md or "none"]</p></div>
+        <div class="card"><h4>Visual tone</h4><p>[Minimalist | Dashboard-heavy]</p></div>
+        <div class="card"><h4>Responsive strategy</h4><p>[Mobile-first, breakpoints]</p></div>
+        <div class="card"><h4>Accessibility target</h4><p>[WCAG 2.2 AA]</p></div>
+      </div>
+
+      <figure class="diagram">
+        <figcaption>Page map and navigation tree</figcaption>
+        <pre class="mermaid">
+flowchart TD
+    ROOT["/ (shell)"] --> AUTH["/login"]
+    ROOT --> DASH["/dashboard"]
+    DASH --> LIST["/items"]
+    LIST --> DETAIL["/items/:id"]
+    DETAIL --> EDIT["/items/:id/edit"]
+    ROOT --> SET["/settings"]
+    SET --> PROF["/settings/profile"]
+    SET --> TEAM["/settings/team"]
+        </pre>
+      </figure>
+
+      <h4>CLI and script interfaces</h4>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th style="width:140px">ID</th><th>Command</th><th>Arguments</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="id">PRE-CLI-001</span></td><td><code>[command]</code></td><td><code>[args]</code></td><td>[What it does]</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>1.3 Output and delivery</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th style="width:140px">ID</th><th>Output type</th><th>Consumer</th><th>Format</th><th>Sync / Async</th></tr></thead>
+          <tbody>
+            <tr><td><span class="id">PRE-OUT-001</span></td><td>JSON response</td><td>[Client]</td><td>application/json</td><td><span class="tag ok">Sync</span></td></tr>
+            <tr><td><span class="id">PRE-OUT-002</span></td><td>Webhook callback</td><td>[Partner]</td><td>application/json</td><td><span class="tag info">Async</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         PILLAR 2 — BUSINESS LOGIC
+         ============================================================ -->
+    <section id="business" data-nav="2 · Business Logic" data-pillar="true">
+      <h2><span class="num">2</span>Business Logic</h2>
+      <p class="hint">What the system does: requirements, architecture, design choices, and the data model.</p>
+
+      <h3>2.1 Functional requirements</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th style="width:110px">ID</th><th>Type</th><th>Statement</th><th>Priority</th><th>Phase</th></tr></thead>
+          <tbody>
+            <tr><td><span class="id">BHV-001</span></td><td><span class="tag info">Behavior</span></td><td>[User story]</td><td><span class="tag risk">Must</span></td><td>P1</td></tr>
+            <tr><td><span class="id">REQ-001</span></td><td><span class="tag">Functional</span></td><td>[Requirement]</td><td><span class="tag risk">Must</span></td><td>P1</td></tr>
+            <tr><td><span class="id">SEC-001</span></td><td><span class="tag risk">Security</span></td><td>[Security requirement]</td><td><span class="tag risk">Must</span></td><td>P1</td></tr>
+            <tr><td><span class="id">CON-001</span></td><td><span class="tag warn">Constraint</span></td><td>[Constraint]</td><td>—</td><td>—</td></tr>
+            <tr><td><span class="id">PAT-001</span></td><td><span class="tag ok">Pattern</span></td><td>[Pattern to follow]</td><td>—</td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <details open>
+        <summary>Acceptance scenarios (Gherkin)</summary>
+        <div class="gherkin"><b>Feature:</b> [Feature name]
+  <b>Scenario:</b> [What must happen]
+    <b>Given</b> [context or prerequisite]
+    <b>When</b> [the trigger action]
+    <b>And</b> [further condition]
+    <b>Then</b> [expected outcome]
+    <b>And</b> [side effect]</div>
+        <div class="gherkin"><b>Feature:</b> [Feature name]
+  <b>Scenario:</b> [Failure path]
+    <b>Given</b> [context]
+    <b>When</b> [the trigger fails]
+    <b>Then</b> [error surfaced to the user]
+    <b>And</b> [system state stays consistent]</div>
+      </details>
+
+      <h3>2.2 Non-functional requirements</h3>
+      <div class="grid c2">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Category</th><th>Requirement</th><th>Target / SLA</th></tr></thead>
+            <tbody>
+              <tr><td>Availability</td><td>[Uptime window]</td><td>[99.9%]</td></tr>
+              <tr><td>Reliability</td><td>[Error budget]</td><td>[&lt; 0.1% failed requests]</td></tr>
+              <tr><td>Fault tolerance</td><td>[Degradation mode]</td><td>[Read-only fallback]</td></tr>
+              <tr><td>Performance</td><td>[p95 response time]</td><td>[&lt; 300 ms]</td></tr>
+              <tr><td>Scalability</td><td>[Peak load]</td><td>[N req/s]</td></tr>
+              <tr><td>Monitoring</td><td>[Signals watched]</td><td>[Alert thresholds]</td></tr>
+              <tr><td>Localization</td><td>[Languages, regions]</td><td>[Scope]</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <figure class="diagram">
+          <figcaption>NFR target against current state</figcaption>
+          <!-- use this only when comparing NFR targets against the current state during analysis -->
+          <div class="chart-box"><canvas id="chartNfr"></canvas></div>
+        </figure>
+      </div>
+
+      <h3>2.3 System architecture</h3>
+      <div class="grid c3">
+        <div class="card"><h4>Pattern</h4><p>[Clean | Hexagonal | Modular monolith | Event-driven]</p></div>
+        <div class="card"><h4>Paradigm</h4><p>[Functional | Object-oriented | Mixed] — [why]</p></div>
+        <div class="card"><h4>CAP position</h4><p>[CP | AP] — [why]</p></div>
+      </div>
+
+      <figure class="diagram">
+        <figcaption>Component map and data flow</figcaption>
+        <pre class="mermaid">
+flowchart LR
+    subgraph Client["Client tier"]
+        WEB["Web app"]
+        CLI["CLI"]
+    end
+    subgraph Edge["Edge"]
+        GW["API gateway&lt;br/&gt;auth, rate limit"]
+    end
+    subgraph Core["Application core"]
+        API["API service"]
+        DOM["Domain layer"]
+        WRK["Background worker"]
+    end
+    subgraph Data["Data tier"]
+        DB[("Primary DB")]
+        CACHE[("Cache")]
+        OBJ[("Object store")]
+    end
+    subgraph Ext["External"]
+        THIRD["Third-party API"]
+    end
+
+    WEB --> GW
+    CLI --> GW
+    GW --> API
+    API --> DOM
+    DOM --> DB
+    DOM --> CACHE
+    API -- enqueue --> WRK
+    WRK --> DB
+    WRK --> OBJ
+    DOM --> THIRD
+
+    classDef core fill:#1f6feb22,stroke:#4c9aff;
+    class API,DOM,WRK core;
+        </pre>
+      </figure>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Component</th><th>Responsibility</th><th>Tech</th><th>Folder</th><th>Owner</th></tr></thead>
+          <tbody>
+            <tr><td>Frontend</td><td>[Responsibility]</td><td>[Tech]</td><td><code>[path]</code></td><td>[Team]</td></tr>
+            <tr><td>Backend</td><td>[Responsibility]</td><td>[Tech]</td><td><code>[path]</code></td><td>[Team]</td></tr>
+            <tr><td>Database</td><td>[Responsibility]</td><td>[Tech]</td><td><code>[path]</code></td><td>[Team]</td></tr>
+            <tr><td>Infrastructure</td><td>[Responsibility]</td><td>[Tech]</td><td><code>[path]</code></td><td>[Team]</td></tr>
+            <tr><td>Jobs / scripts</td><td>[Responsibility]</td><td>[Tech]</td><td><code>[path]</code></td><td>[Team]</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <details>
+        <summary>Tradeoff decisions</summary>
+        <ul class="tight">
+          <li><b>Complexity management:</b> [How complexity stays contained across layers.]</li>
+          <li><b>Decoupling strategy:</b> [Which seams carry interfaces and why.]</li>
+          <li><b>Consistency against availability:</b> [The chosen position and the cost.]</li>
+          <li><b>Latency against throughput:</b> [The chosen position and the cost.]</li>
+          <li><b>Build against buy:</b> [What is bought and why.]</li>
+        </ul>
+      </details>
+
+      <h3>2.4 Design choices</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th style="width:100px">ID</th><th>Choice</th><th>Goal</th><th>Alternatives rejected</th><th>Reference</th></tr></thead>
+          <tbody>
+            <tr><td><span class="id">DES-001</span></td><td>[Design choice]</td><td>[Why]</td><td>[What was rejected and why]</td><td>[REQ / ADR id]</td></tr>
+            <tr><td><span class="id">DES-002</span></td><td>[Design choice]</td><td>[Why]</td><td>[What was rejected and why]</td><td>[REQ / ADR id]</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>2.5 Data model</h3>
+      <figure class="diagram">
+        <figcaption>Entity relationship diagram</figcaption>
+        <pre class="mermaid">
+erDiagram
+    USER ||--o{ ORDER : places
+    USER {
+        uuid id PK
+        string email UK
+        string role
+        timestamp created_at
+    }
+    ORDER ||--|{ ORDER_ITEM : contains
+    ORDER {
+        uuid id PK
+        uuid user_id FK
+        string status
+        numeric total
+        timestamp placed_at
+    }
+    ORDER_ITEM }o--|| PRODUCT : references
+    ORDER_ITEM {
+        uuid id PK
+        uuid order_id FK
+        uuid product_id FK
+        int quantity
+        numeric unit_price
+    }
+    PRODUCT {
+        uuid id PK
+        string sku UK
+        string name
+        numeric price
+    }
+        </pre>
+      </figure>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Entity</th><th>Key attributes</th><th>Relationships</th><th>Module</th><th>Retention</th></tr></thead>
+          <tbody>
+            <tr><td>[Entity]</td><td>[Attributes]</td><td>[Relations]</td><td>[Module]</td><td>[Policy]</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <figure class="diagram">
+        <figcaption>End-to-end data flow with decision points</figcaption>
+        <pre class="mermaid">
+flowchart TD
+    A["Input received"] --> B{"Schema valid?"}
+    B -- No --> E1["Reject 400&lt;br/&gt;log validation error"]
+    B -- Yes --> C{"Authorized?"}
+    C -- No --> E2["Reject 401"]
+    C -- Yes --> D["Apply domain rules"]
+    D --> F{"Needs external call?"}
+    F -- Yes --> G["Call third party&lt;br/&gt;retry with backoff"]
+    G --> H{"Success?"}
+    H -- No --> I["Fallback path&lt;br/&gt;queue for retry"]
+    H -- Yes --> J["Persist"]
+    F -- No --> J
+    J --> K["Emit event"]
+    K --> L["Return response"]
+        </pre>
+      </figure>
+
+      <details>
+        <summary>Business rules and validation</summary>
+        <ul class="tight">
+          <li><b>Validation library:</b> [zod | pydantic | JSON Schema]</li>
+          <li><b>Boundary validation:</b> [Where input is checked first.]</li>
+          <li><b>Domain rules:</b> [Invariants the domain layer enforces.]</li>
+          <li><b>Permission enforcement:</b> [Where authorization is decided.]</li>
+        </ul>
+      </details>
+    </section>
+
+    <!-- ============================================================
+         PILLAR 3 — CONTEXT
+         ============================================================ -->
+    <section id="context" data-nav="3 · Context" data-pillar="true">
+      <h2><span class="num">3</span>Context</h2>
+      <p class="hint">Where data lives, what the system depends on, and how it is configured.</p>
+
+      <h3>3.1 Data storage</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th style="width:130px">ID</th><th>Store type</th><th>Technology</th><th>Purpose</th><th>Data retained</th><th>Backup</th></tr></thead>
+          <tbody>
+            <tr><td><span class="id">CTX-DS-001</span></td><td>Relational</td><td>[PostgreSQL]</td><td>[Purpose]</td><td>[What]</td><td>[Cadence]</td></tr>
+            <tr><td><span class="id">CTX-DS-002</span></td><td>In-memory</td><td>[Redis]</td><td>[Cache, sessions]</td><td>[What]</td><td>[None]</td></tr>
+            <tr><td><span class="id">CTX-DS-003</span></td><td>Object store</td><td>[S3]</td><td>[Files]</td><td>[What]</td><td>[Versioning]</td></tr>
+            <tr><td><span class="id">CTX-DS-004</span></td><td>Vector store</td><td>[pgvector]</td><td>[Embeddings]</td><td>[What]</td><td>[Rebuildable]</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="grid c2">
+        <div class="card"><h4>ORM / data access</h4><p>[Prisma | Drizzle | SQLAlchemy] — [why]</p></div>
+        <div class="card"><h4>Migration strategy</h4><p>[Versioning, rollback plan, seed approach]</p></div>
+      </div>
+
+      <h3>3.2 External information sources</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th style="width:140px">ID</th><th>Source</th><th>Protocol</th><th>Contract</th><th>Auth</th><th>SLA</th><th>Failure mode</th></tr></thead>
+          <tbody>
+            <tr><td><span class="id">CTX-EXT-001</span></td><td>[Service]</td><td>[REST]</td><td>[Schema link]</td><td>[API key]</td><td>[99.9%]</td><td>[What breaks]</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>3.3 Settings and configuration</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Variable</th><th>Purpose</th><th>Secret</th><th>Default</th><th>Per environment</th></tr></thead>
+          <tbody>
+            <tr><td><code>DATABASE_URL</code></td><td>[Purpose]</td><td><span class="tag risk">Yes</span></td><td>—</td><td>Yes</td></tr>
+            <tr><td><code>LOG_LEVEL</code></td><td>[Purpose]</td><td><span class="tag ok">No</span></td><td><code>info</code></td><td>Yes</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card warn">
+        <h4>Secrets management</h4>
+        <p>Store: [vault | cloud secrets manager]. Rotation: [cadence]. Never commit a secret, and never print one in a log or a report.</p>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         PILLAR 4 — COMMUNICATION
+         ============================================================ -->
+    <section id="communication" data-nav="4 · Communication" data-pillar="true">
+      <h2><span class="num">4</span>Communication</h2>
+      <p class="hint">How components, services, and people exchange information.</p>
+
+      <figure class="diagram">
+        <figcaption>Primary request sequence</figcaption>
+        <pre class="mermaid">
+sequenceDiagram
+    autonumber
+    actor U as User
+    participant W as Web app
+    participant G as API gateway
+    participant S as API service
+    participant D as Database
+    participant Q as Queue
+    participant K as Worker
+
+    U->>W: Submit action
+    W->>G: POST /api/v1/resource
+    G->>G: Verify token, check rate limit
+    G->>S: Forward request
+    S->>D: Read current state
+    D-->>S: Rows
+    S->>D: Write new state
+    S->>Q: Publish event
+    S-->>G: 201 Created
+    G-->>W: 201 Created
+    W-->>U: Confirmation
+    Q->>K: Deliver event
+    K->>D: Update projection
+    Note over K,D: Failure here retries with backoff
+        </pre>
+      </figure>
+
+      <h3>4.1 Internal communication</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th style="width:140px">ID</th><th>From</th><th>To</th><th>Protocol</th><th>Pattern</th><th>Mode</th></tr></thead>
+          <tbody>
+            <tr><td><span class="id">COM-INT-001</span></td><td>[Component]</td><td>[Component]</td><td>[HTTP | gRPC | in-process]</td><td>[request-response]</td><td><span class="tag ok">Sync</span></td></tr>
+            <tr><td><span class="id">COM-INT-002</span></td><td>[Component]</td><td>[Component]</td><td>[AMQP]</td><td>[pub-sub]</td><td><span class="tag info">Async</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>4.2 External communication</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th style="width:140px">ID</th><th>Direction</th><th>Counterparty</th><th>Protocol</th><th>Auth</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td><span class="id">COM-EXT-001</span></td><td><span class="tag">Inbound</span></td><td>[Partner]</td><td>[Webhook]</td><td>[HMAC]</td><td>[Notes]</td></tr>
+            <tr><td><span class="id">COM-EXT-002</span></td><td><span class="tag info">Outbound</span></td><td>[Vendor]</td><td>[REST]</td><td>[OAuth2]</td><td>[Notes]</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>4.3 Event and message patterns</h3>
+      <div class="grid c3">
+        <div class="card"><h4>Pattern</h4><p>[pub/sub | CQRS | saga | orchestration]</p></div>
+        <div class="card"><h4>Broker</h4><p>[Kafka | RabbitMQ | SQS | none]</p></div>
+        <div class="card"><h4>Dead letter strategy</h4><p>[Where failed messages land and who reviews them]</p></div>
+      </div>
+
+      <h3>4.4 Human in the loop</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th style="width:140px">ID</th><th>Trigger</th><th>Action required</th><th>Owner</th><th>Fallback if no response</th></tr></thead>
+          <tbody>
+            <tr><td><span class="id">COM-HIL-001</span></td><td>[Trigger]</td><td>[Approval or review]</td><td>[Role]</td><td>[Timeout behavior]</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <details>
+        <summary>Contract conventions</summary>
+        <ul class="tight">
+          <li><b>Shared types:</b> [Where the schema registry or shared package lives.]</li>
+          <li><b>Versioning:</b> [URL path | header | query parameter.]</li>
+          <li><b>Errors:</b> [Response shape and status code rules.]</li>
+          <li><b>Pagination:</b> [cursor | offset], default page size [N].</li>
+        </ul>
+      </details>
+    </section>
+
+    <!-- ============================================================
+         PILLAR 5 — PROCESS
+         ============================================================ -->
+    <section id="process" data-nav="5 · Process" data-pillar="true">
+      <h2><span class="num">5</span>Process</h2>
+      <p class="hint">How the system is built, shipped, watched, and maintained.</p>
+
+      <h3>5.1 Runtime and language fit</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Component</th><th>Language</th><th>Runtime</th><th>Why this choice</th></tr></thead>
+          <tbody>
+            <tr><td>[Component]</td><td>[Language]</td><td>[Runtime and version]</td><td>[Justification]</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>5.2 Deployment and delivery</h3>
+      <figure class="diagram">
+        <figcaption>Pipeline from commit to production</figcaption>
+        <pre class="mermaid">
+flowchart LR
+    C["Commit"] --> L["Lint"]
+    L --> T["Unit tests"]
+    T --> B["Build"]
+    B --> SEC["Security scan&lt;br/&gt;SAST + deps"]
+    SEC --> IT["Integration tests"]
+    IT --> STG["Deploy staging"]
+    STG --> E2E["End-to-end tests"]
+    E2E --> GATE{"Manual approval"}
+    GATE -- Approve --> PRD["Deploy production&lt;br/&gt;canary then full"]
+    GATE -- Reject --> STOP["Stop and report"]
+    PRD --> MON["Watch metrics&lt;br/&gt;auto-rollback on error budget burn"]
+
+    classDef gate fill:#d2992222,stroke:#d29922;
+    class GATE,SEC gate;
+        </pre>
+      </figure>
+
+      <div class="grid c3">
+        <div class="card"><h4>Environments</h4><p>[local, dev, staging, production]</p></div>
+        <div class="card"><h4>Infrastructure</h4><p>[Cloud, containers, serverless]</p></div>
+        <div class="card"><h4>Orchestration</h4><p>[Kubernetes | ECS | Compose | none]</p></div>
+        <div class="card"><h4>Deployment pattern</h4><p>[blue-green | canary | rolling]</p></div>
+        <div class="card"><h4>Branching strategy</h4><p>[trunk-based | GitFlow]</p></div>
+        <div class="card"><h4>Rollback</h4><p>[Steps to revert, and the time it takes]</p></div>
+      </div>
+
+      <h3>5.3 Quality assurance</h3>
+      <div class="grid c2">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Level</th><th>Framework</th><th>Scope</th><th>Coverage target</th></tr></thead>
+            <tbody>
+              <tr><td>Unit</td><td>[Framework]</td><td>[Scope]</td><td>[80%]</td></tr>
+              <tr><td>Integration</td><td>[Framework]</td><td>[Scope]</td><td>[60%]</td></tr>
+              <tr><td>End-to-end</td><td>[Framework]</td><td>[Critical paths]</td><td>[Flows covered]</td></tr>
+              <tr><td>Performance</td><td>[Framework]</td><td>[Endpoints]</td><td>[p95 budget]</td></tr>
+              <tr><td>Security</td><td>[Framework]</td><td>[SAST, deps]</td><td>[0 critical]</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <figure class="diagram">
+          <figcaption>Coverage against target by level</figcaption>
+          <div class="chart-box"><canvas id="chartCoverage"></canvas></div>
+        </figure>
+      </div>
+
+      <h3>5.4 Observability</h3>
+      <div class="grid c4">
+        <div class="card"><h4>Logging</h4><p>[Library], structured JSON, [levels per environment]</p></div>
+        <div class="card"><h4>Metrics</h4><p>Latency, error rate, saturation, traffic</p></div>
+        <div class="card"><h4>Tracing</h4><p>[OpenTelemetry | none]</p></div>
+        <div class="card"><h4>Alerting</h4><p>[Thresholds and escalation]</p></div>
+      </div>
+
+      <h3>5.5 Error handling and resilience</h3>
+      <figure class="diagram">
+        <figcaption>Dependency failure states</figcaption>
+        <pre class="mermaid">
+stateDiagram-v2
+    [*] --> Healthy
+    Healthy --> Degraded: error rate above threshold
+    Degraded --> CircuitOpen: failures exceed limit
+    CircuitOpen --> HalfOpen: cooldown elapsed
+    HalfOpen --> Healthy: probe succeeds
+    HalfOpen --> CircuitOpen: probe fails
+    Degraded --> Healthy: error rate recovers
+    CircuitOpen --> Fallback: serve cached or reduced response
+    Fallback --> HalfOpen: retry window
+        </pre>
+      </figure>
+
+      <div class="grid c3">
+        <div class="card"><h4>Error strategy</h4><p>[try-catch | Result type | error boundaries]</p></div>
+        <div class="card"><h4>Resilience patterns</h4><p>[retry with backoff, circuit breaker, bulkhead]</p></div>
+        <div class="card"><h4>Graceful degradation</h4><p>[What the user sees when a dependency is down]</p></div>
+      </div>
+
+      <h3>5.6 Security</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th style="width:110px">OWASP</th><th>Threat</th><th>Mitigation</th><th>Enforced at</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td><span class="id">A01</span></td><td>Broken access control</td><td>[Mitigation]</td><td>[Layer]</td><td><span class="tag ok">Covered</span></td></tr>
+            <tr><td><span class="id">A02</span></td><td>Cryptographic failures</td><td>[Mitigation]</td><td>[Layer]</td><td><span class="tag warn">Partial</span></td></tr>
+            <tr><td><span class="id">A03</span></td><td>Injection</td><td>[Parameterized queries, validation]</td><td>[Layer]</td><td><span class="tag ok">Covered</span></td></tr>
+            <tr><td><span class="id">A05</span></td><td>Security misconfiguration</td><td>[Mitigation]</td><td>[Layer]</td><td><span class="tag risk">Open</span></td></tr>
+            <tr><td><span class="id">A07</span></td><td>Authentication failures</td><td>[Mitigation]</td><td>[Layer]</td><td><span class="tag ok">Covered</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="grid c2">
+        <div class="card"><h4>Authentication</h4><p>[OAuth2 | JWT | session | SSO with MFA]</p></div>
+        <div class="card"><h4>Authorization model</h4><p>[RBAC | ABAC | policy-based]</p></div>
+        <div class="card"><h4>Data protection</h4><p>[Encryption at rest and in transit, PII masking, retention]</p></div>
+        <div class="card"><h4>Dependency security</h4><p>[CVE scan cadence, lockfile policy]</p></div>
+      </div>
+
+      <h3>5.7 Operations</h3>
+      <div class="grid c4">
+        <div class="card"><h4>Runbooks</h4><p>[Location and top procedures]</p></div>
+        <div class="card"><h4>Backup and recovery</h4><p>RPO [N], RTO [N]</p></div>
+        <div class="card"><h4>Scaling</h4><p>[Triggers, manual and automatic]</p></div>
+        <div class="card"><h4>On call</h4><p>[Rotation and escalation]</p></div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         DEPENDENCIES
+         ============================================================ -->
+    <section id="dependencies" data-nav="Dependencies" data-pillar="true">
+      <h2>Dependencies</h2>
+      <p class="hint">Everything outside this codebase that the system needs to work.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th style="width:120px">ID</th><th>Type</th><th>Name</th><th>Purpose</th><th>Impact if unavailable</th></tr></thead>
+          <tbody>
+            <tr><td><span class="id">EXT-001</span></td><td>External system</td><td>[Name]</td><td>[Purpose]</td><td>[Impact]</td></tr>
+            <tr><td><span class="id">SVC-001</span></td><td>Third-party service</td><td>[Name]</td><td>[Capability and SLA]</td><td>[Impact]</td></tr>
+            <tr><td><span class="id">INF-001</span></td><td>Infrastructure</td><td>[Name]</td><td>[Requirement]</td><td>[Impact]</td></tr>
+            <tr><td><span class="id">DAT-001</span></td><td>Data source</td><td>[Name]</td><td>[Format and frequency]</td><td>[Impact]</td></tr>
+            <tr><td><span class="id">CMP-001</span></td><td>Compliance</td><td>[Regulation]</td><td>[Obligation]</td><td>[Impact]</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Package dependencies</h3>
+      <details>
+        <summary>[subsystem name]</summary>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Package</th><th>Version</th><th>Purpose</th><th>CVE check</th></tr></thead>
+            <tbody>
+              <tr><td><code>[package]</code></td><td>[x.y.z]</td><td>[Purpose]</td><td><span class="tag ok">Clean</span></td></tr>
+              <tr><td><code>[package]</code></td><td>[x.y.z]</td><td>[Purpose]</td><td><span class="tag warn">Review</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </details>
+    </section>
+
+    <!-- ============================================================
+         APPENDICES
+         ============================================================ -->
+    <section id="appendix" data-nav="Appendices" data-pillar="true">
+      <h2>Appendices</h2>
+
+      <h3>A · Glossary</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th style="width:220px">Term</th><th>Definition</th></tr></thead>
+          <tbody>
+            <tr><td>[Term]</td><td>[Definition]</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>B · References</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Document</th><th>Location</th><th>Relevance</th></tr></thead>
+          <tbody>
+            <tr><td>[PRD]</td><td><code>[relative path]</code></td><td>[Why it matters]</td></tr>
+            <tr><td>[ADR]</td><td><code>[relative path]</code></td><td>[Why it matters]</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>C · Decision log</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th style="width:110px">ID</th><th>Decision</th><th>Context</th><th>Alternatives considered</th><th>Date</th></tr></thead>
+          <tbody>
+            <tr><td><span class="id">ADR-001</span></td><td>[Decision]</td><td>[Context]</td><td>[Alternatives]</td><td>[YYYY-MM-DD]</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>D · Open questions</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th style="width:110px">ID</th><th>Question</th><th>Blocks</th><th>Owner</th><th>Due</th></tr></thead>
+          <tbody>
+            <tr><td><span class="id">OQ-001</span></td><td>[Question]</td><td>[What it blocks]</td><td>[Who answers]</td><td>[Date]</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- Pinned versions with subresource integrity. Update the hash if you change the version. -->
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js"
+        integrity="sha384-rbtjAdnIQE/aQJGEgXrVUlMibdfTSa4PQju4HDhN3sR2PmaKFzhEafuePsl9H/9I"
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"
+        integrity="sha384-vsrfeLOOY6KuIYKDlmVH5UiBmgIdB1oEf7p01YgWHuqmOHfZr374+odEv96n9tNC"
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<script>
+(function () {
+  "use strict";
+
+  var root = document.documentElement;
+  var charts = [];
+
+  /* ---------- theme ---------- */
+  function palette() {
+    var s = getComputedStyle(root);
+    return {
+      text: s.getPropertyValue("--text").trim(),
+      dim: s.getPropertyValue("--text-dim").trim(),
+      grid: s.getPropertyValue("--border").trim(),
+      accent: s.getPropertyValue("--accent").trim(),
+      ok: s.getPropertyValue("--ok").trim(),
+      warn: s.getPropertyValue("--warn").trim(),
+      risk: s.getPropertyValue("--risk").trim(),
+      info: s.getPropertyValue("--info").trim()
+    };
+  }
+
+  /* ---------- table of contents ---------- */
+  var sections = Array.prototype.slice.call(document.querySelectorAll("section[id]"));
+  var toc = document.getElementById("toc");
+  sections.forEach(function (sec) {
+    var li = document.createElement("li");
+    var a = document.createElement("a");
+    a.href = "#" + sec.id;
+    a.textContent = sec.dataset.nav || sec.id;
+    if (sec.dataset.pillar === "true") { a.className = "pillar"; }
+    li.appendChild(a);
+    toc.appendChild(li);
+  });
+
+  var links = {};
+  Array.prototype.forEach.call(toc.querySelectorAll("a"), function (a) {
+    links[a.getAttribute("href").slice(1)] = a;
+  });
+
+  var spy = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      var a = links[e.target.id];
+      if (!a) { return; }
+      if (e.isIntersecting) {
+        Object.keys(links).forEach(function (k) { links[k].classList.remove("active"); });
+        a.classList.add("active");
+      }
+    });
+  }, { rootMargin: "-10% 0px -75% 0px", threshold: 0 });
+  sections.forEach(function (s) { spy.observe(s); });
+
+  /* ---------- mermaid ---------- */
+  var diagrams = Array.prototype.slice.call(document.querySelectorAll("pre.mermaid"));
+  diagrams.forEach(function (d) { d.dataset.src = d.textContent; });
+
+  function renderMermaid() {
+    if (typeof mermaid === "undefined") { return; }
+    diagrams.forEach(function (d) {
+      d.removeAttribute("data-processed");
+      d.textContent = d.dataset.src;
+    });
+    mermaid.initialize({
+      startOnLoad: false,
+      securityLevel: "strict",
+      theme: root.dataset.theme === "dark" ? "dark" : "default",
+      themeVariables: { fontFamily: "ui-sans-serif, system-ui, sans-serif" },
+      // htmlLabels stays false so <br/> works under securityLevel "strict"
+      flowchart: { curve: "basis", htmlLabels: false },
+      er: { useMaxWidth: true },
+      sequence: { useMaxWidth: true },
+      gantt: { useMaxWidth: true }
+    });
+    mermaid.run({ nodes: diagrams });
+  }
+
+  /* ---------- charts ---------- */
+  function renderCharts() {
+    if (typeof Chart === "undefined") { return; }
+    charts.forEach(function (c) { c.destroy(); });
+    charts = [];
+
+    var p = palette();
+    Chart.defaults.color = p.dim;
+    Chart.defaults.borderColor = p.grid;
+    Chart.defaults.font.family = "ui-sans-serif, system-ui, sans-serif";
+
+    function make(id, config) {
+      var el = document.getElementById(id);
+      if (!el) { return; }
+      charts.push(new Chart(el, config));
+    }
+
+    /* EDIT: effort per phase, in person-days */
+    make("chartPhases", {
+      type: "bar",
+      data: {
+        labels: ["P1 Foundation", "P2 Core", "P3 Hardening"],
+        datasets: [
+          { label: "Estimate", data: [22, 24, 14], backgroundColor: p.accent, borderRadius: 4 },
+          { label: "Buffer", data: [5, 6, 4], backgroundColor: p.warn, borderRadius: 4 }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        scales: {
+          x: { stacked: true, grid: { display: false } },
+          y: { stacked: true, title: { display: true, text: "person-days" }, grid: { color: p.grid } }
+        },
+        plugins: { legend: { position: "bottom" } }
+      }
+    });
+
+    /* EDIT: one point per risk. x = likelihood 1-5, y = impact 1-5, r = exposure */
+    make("chartRisk", {
+      type: "bubble",
+      data: {
+        datasets: [
+          { label: "Technical", data: [{ x: 3, y: 4, r: 14 }, { x: 2, y: 5, r: 12 }], backgroundColor: p.risk + "aa" },
+          { label: "Delivery", data: [{ x: 4, y: 3, r: 16 }], backgroundColor: p.warn + "aa" },
+          { label: "External", data: [{ x: 2, y: 2, r: 9 }], backgroundColor: p.info + "aa" }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        scales: {
+          x: { min: 0, max: 6, title: { display: true, text: "likelihood" }, grid: { color: p.grid } },
+          y: { min: 0, max: 6, title: { display: true, text: "impact" }, grid: { color: p.grid } }
+        },
+        plugins: { legend: { position: "bottom" } }
+      }
+    });
+
+    /* EDIT: normalize every axis to a 0-100 score so the shapes compare */
+    make("chartNfr", {
+      type: "radar",
+      data: {
+        labels: ["Availability", "Performance", "Scalability", "Security", "Observability", "Maintainability"],
+        datasets: [
+          { label: "Target", data: [95, 90, 85, 95, 80, 85], borderColor: p.accent, backgroundColor: p.accent + "33", pointBackgroundColor: p.accent },
+          { label: "Current", data: [80, 65, 60, 75, 55, 70], borderColor: p.warn, backgroundColor: p.warn + "22", pointBackgroundColor: p.warn }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        scales: { r: { min: 0, max: 100, grid: { color: p.grid }, angleLines: { color: p.grid }, pointLabels: { color: p.dim } } },
+        plugins: { legend: { position: "bottom" } }
+      }
+    });
+
+    /* EDIT: test coverage per level against the target */
+    make("chartCoverage", {
+      type: "bar",
+      data: {
+        labels: ["Unit", "Integration", "End-to-end", "Performance", "Security"],
+        datasets: [
+          { label: "Current %", data: [72, 48, 30, 20, 60], backgroundColor: p.accent, borderRadius: 4 },
+          { label: "Target %", type: "line", data: [80, 60, 40, 30, 100], borderColor: p.ok, backgroundColor: p.ok, borderDash: [5, 4], pointRadius: 3, fill: false }
+        ]
+      },
+      options: {
+        indexAxis: "x",
+        responsive: true, maintainAspectRatio: false,
+        scales: {
+          x: { grid: { display: false } },
+          y: { min: 0, max: 100, grid: { color: p.grid } }
+        },
+        plugins: { legend: { position: "bottom" } }
+      }
+    });
+  }
+
+  /* ---------- toolbar ---------- */
+  var themeBtn = document.getElementById("themeToggle");
+  themeBtn.addEventListener("click", function () {
+    var next = root.dataset.theme === "dark" ? "light" : "dark";
+    root.dataset.theme = next;
+    themeBtn.textContent = next === "dark" ? "Light mode" : "Dark mode";
+    renderMermaid();
+    renderCharts();
+  });
+
+  document.getElementById("expandAll").addEventListener("click", function () {
+    document.querySelectorAll("details").forEach(function (d) { d.open = true; });
+  });
+  document.getElementById("collapseAll").addEventListener("click", function () {
+    document.querySelectorAll("details").forEach(function (d) { d.open = false; });
+  });
+  document.getElementById("printBtn").addEventListener("click", function () {
+    document.querySelectorAll("details").forEach(function (d) { d.open = true; });
+    window.print();
+  });
+
+  /* filter table rows and list items by text or ID */
+  var filterables = Array.prototype.slice.call(document.querySelectorAll("tbody tr, ul.tight li"));
+  document.getElementById("filter").addEventListener("input", function (e) {
+    var q = e.target.value.trim().toLowerCase();
+    filterables.forEach(function (el) {
+      var hit = q === "" || el.textContent.toLowerCase().indexOf(q) !== -1;
+      el.classList.toggle("hidden-by-filter", !hit);
+    });
+  });
+
+  /* expand a collapsed section when the user follows a deep link */
+  window.addEventListener("hashchange", function () {
+    var t = document.querySelector(window.location.hash);
+    if (t && t.tagName === "DETAILS") { t.open = true; }
+  });
+
+  window.addEventListener("beforeprint", function () {
+    document.querySelectorAll("details").forEach(function (d) { d.open = true; });
+  });
+
+  renderMermaid();
+  renderCharts();
+})();
+</script>
+</body>
+</html>
