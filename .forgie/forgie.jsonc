@@ -6,7 +6,8 @@
   // The engine package sits one folder up. Replace this with the published
   // specifier once you install it, for example:
   //   "plugin": ["forgie-workflow-engine@1.0.0"]
-  "plugin": ["./node_modules/forgie-workflow-engine/dist/plugin.js"],
+  // Wrapper that loads forgie-workflow-engine with modelStallMs set. See workflow-engine.js.
+  "plugin": ["./workflow-engine.js"],
 
   "agent": {
     // ---- primary ----------------------------------------------------------

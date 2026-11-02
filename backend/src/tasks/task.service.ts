@@ -15,8 +15,7 @@ const PAST_DUE_DATE = 'Due date cannot be in the past';
 // A blank description is stored as null (REQ-016).
 function normalizeDescription(value: string | null | undefined): string | null {
   if (value === undefined || value === null) return null;
-  const trimmed = value.trim();
-  return trimmed === '' ? null : trimmed;
+  return value.trim() === '' ? null : value;
 }
 
 export function createTaskService(repo: TaskRepository, clock: () => Date): TaskService {
