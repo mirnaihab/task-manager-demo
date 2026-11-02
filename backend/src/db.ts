@@ -1,4 +1,5 @@
 import pg from 'pg';
+import { logger } from './logger';
 
 const DATE_OID = 1082;
 
@@ -6,5 +7,8 @@ const DATE_OID = 1082;
 pg.types.setTypeParser(DATE_OID, (value) => value);
 
 export function createPool(databaseUrl: string): pg.Pool {
-  return new pg.Pool({ connectionString: databaseUrl, max: 5 });
+  const pool = new pg.Pool({ connectionString: databaseUrl, max: 5 });
+  // Without this listener Node exits when an idle client drops.
+  pool.on('error', (err) => logger.error({ err }, 'Unexpected error on idle database client'));
+  return pool;
 }

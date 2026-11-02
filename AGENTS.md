@@ -140,4 +140,4 @@ Run the backend commands in `backend/`. Backend tests need the `taskmanager_test
 
 ## Open items
 - ADR-001 (hosting provider) blocks phase 4.
-- Fix TD-001 (pool error listener) before the first hosted deploy.
+- TD-001 (pool error listener) is fixed. The pool logs idle client errors.

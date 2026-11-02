@@ -49,7 +49,7 @@ A single user creates, tracks and prioritizes tasks from a phone. One REST API s
 
 | ID | Requirement | Status |
 |---|---|---|
-| NFR-001 | Unit tests, API integration tests and basic UI tests pass. | Done. Backend 55, Android 41 unit and 15 UI, iOS 37 unit and 11 UI. |
+| NFR-001 | Unit tests, API integration tests and basic UI tests pass. | Done. Backend 58, Android 41 unit and 15 UI, iOS 37 unit and 11 UI. |
 | NFR-002 | The backend URL is configurable per environment. | Done. Release URL is a placeholder until phase 4. |
 | NFR-003 | The apps reach the hosted backend over HTTPS. | Open (phase 4). |
 | NFR-004 | The API and the database run online. | Open (phase 4, ADR-001). |
@@ -67,9 +67,10 @@ A single user creates, tracks and prioritizes tasks from a phone. One REST API s
 
 **Next priorities**
 1. The owner decides the hosting provider (ADR-001).
-2. Fix TD-001 (pool error listener) before the first hosted deploy.
-3. Build the Docker image (TD-002), deploy, set the hosted URL in both apps.
-4. Run the cross-device check and complete the deploy section of the README.
+2. Build the Docker image (TD-002), deploy, set the hosted URL in both apps.
+3. Run the cross-device check and complete the deploy section of the README.
+
+Done: TD-001 (pool error listener) on 2026-11-03. See `operations/archives/2026-11-03-fix-td-001/summary.md`.
 
 ## 6. Requirement Changes and Assumptions
 

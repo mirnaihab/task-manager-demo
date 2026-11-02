@@ -247,13 +247,13 @@ Four phases. Each phase is reviewable on its own. Phases 2 and 3 only need the c
 
 | Area | Result |
 |---|---|
-| Backend | Routes, service and repository layers as planned. 55 tests pass. `createApp({ pool, clock })` lets tests fix the date. A test database name must end in `_test`. |
+| Backend | Routes, service and repository layers as planned. 58 tests pass. `createApp({ pool, clock })` lets tests fix the date. A test database name must end in `_test`. |
 | Android | `data` and `ui` layers. 41 unit tests and 15 Compose UI tests. Cleartext only in the debug build for `10.0.2.2`. |
 | iOS | `Data` and `Features` layers. 37 unit tests and 11 UI tests. Run tests with `-parallel-testing-enabled NO`. The mock API is chosen by the `-UITestMock` launch argument. |
 | Deviations | See `operations/archives/2026-11-03-task-manager-phases-1-3/summary.md`. |
 
 ### Known limits
 - The Dockerfile is not built (Docker missing on the dev machine). Phase 4 builds it.
-- The pool has no `error` listener yet (TD-001).
+- The pool logs idle client errors with `logger.error` (TD-001, fixed 2026-11-03). `pg` replaces the dead client on the next query.
 - Release builds point at `https://example.invalid` until phase 4.
 - All items: `docs/technical-debt.md`.

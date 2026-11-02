@@ -15,7 +15,6 @@ None.
 
 | ID | Item | Effort | Mitigation |
 |---|---|---|---|
-| TD-001 | `backend/src/db.ts` does not attach an `error` listener to the `pg` pool. A dropped idle connection (hosted database restart) can crash the process. | S | Add `pool.on('error', ...)` that logs with `logger.error`. Add a test. Do this before phase 4. |
 | TD-002 | `backend/Dockerfile` is written but never built. Docker is not installed on the dev machine. | M | Build the image on the host in phase 4 (TASK-P4). Run `/health` against the container. |
 | TD-003 | All phase 1 to 3 work is uncommitted. | S | Commit in reviewable groups (backend, android, ios, docs) after the owner approves. |
 
@@ -44,7 +43,9 @@ None.
 | Severity | Items |
 |---|---|
 | Critical | 0 |
-| High | 3 |
+| High | 2 |
 | Medium | 5 |
 | Low | 5 |
-| Total | 13 |
+| Total | 12 |
+
+Fixed: TD-001 on 2026-11-03. `createPool` now logs pool errors with `logger.error`. Test: `backend/test/db.test.ts`.
