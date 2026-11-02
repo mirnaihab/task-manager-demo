@@ -87,20 +87,22 @@ If you haven't run the verification command in this message, you cannot claim it
 # Project: Task Manager
 
 Requirements, stack decisions and the deployment requirement are in `docs/user-stories.md`.
-High level design: `operations/specs/task-manager-hld.md`. UI rules: `DESIGN.md`.
+High level design: `docs/HLD.md`. UI rules: `DESIGN.md`.
+Product status and roadmap: `docs/PRD.md`. Decisions: `docs/ADRs/`. Known issues: `docs/technical-debt.md`.
+Setup and run steps: `README.md`.
 
 ## Plans
 Build in this order. Phases 2 and 3 can run in parallel after phase 1.
 
 | Phase | Plan | Status |
 |---|---|---|
-| 1 Backend API and database | `operations/specs/feature_task-manager/plan_phase_1.md` | Planned |
-| 2 Android app | `operations/specs/feature_task-manager/plan_phase_2.md` | Planned |
-| 3 iOS app | `operations/specs/feature_task-manager/plan_phase_3.md` | Planned |
+| 1 Backend API and database | `operations/archives/2026-11-03-task-manager-phases-1-3/plan_phase_1.md` | Done |
+| 2 Android app | `operations/archives/2026-11-03-task-manager-phases-1-3/plan_phase_2.md` | Done |
+| 3 iOS app | `operations/archives/2026-11-03-task-manager-phases-1-3/plan_phase_3.md` | Done |
 | 4 Hosting, release, docs | `operations/specs/feature_task-manager/plan_phase_4.md` | Planned. Needs the hosting decision (ADR-001). |
 
 ## Structure
-- `backend/`: Node.js + TypeScript REST API. Not created yet.
+- `backend/`: Node.js + TypeScript REST API.
 - `android/`: native Android app. Kotlin + Jetpack Compose. Package `com.demo.taskmanager`.
 - `ios/`: native iOS app. Swift + SwiftUI. Xcode project `ios/TaskManager.xcodeproj`, scheme `TaskManager`.
 
@@ -115,7 +117,27 @@ Set `JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"` be
 | Part | Build | Lint | Test |
 |---|---|---|---|
 | backend | `npm run build` | `npm run lint` | `npm test` |
-| android | `cd android && ./gradlew assembleDebug` | `./gradlew lint` | `./gradlew test` |
-| ios | `cd ios && xcodebuild build -scheme TaskManager -destination 'generic/platform=iOS Simulator'` | n/a | `xcodebuild test -scheme TaskManager -destination 'platform=iOS Simulator,name=<installed iPhone>'` |
+| android | `cd android && ./gradlew assembleDebug` | `./gradlew lint` | `./gradlew test` (unit). `./gradlew connectedDebugAndroidTest` (UI tests, needs a running emulator) |
+| ios | `cd ios && xcodebuild build -scheme TaskManager -destination 'generic/platform=iOS Simulator'` | n/a | `xcodebuild test -scheme TaskManager -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -parallel-testing-enabled NO` |
 
-The backend commands become valid after the backend phase creates `backend/package.json`.
+Run the backend commands in `backend/`. Backend tests need the `taskmanager_test` database. The test setup refuses a database name that does not end in `_test`.
+
+## Architecture rules
+- Backend layers: `routes` (HTTP and zod), `service` (rules), `repository` (SQL). `createApp({ pool, clock })` receives its dependencies.
+- Use bind parameters for all SQL. Build `UPDATE` column names only from a fixed allow-list.
+- The server owns `overdue` and the summary counts. The apps do not repeat these rules.
+- Keep dates as `YYYY-MM-DD` strings in data. Convert to a date object only for the date picker.
+- Android and iOS use manual wiring and one `TaskListViewModel`. Tests use a fake or mock API, never the network.
+- Allow plain HTTP only in debug builds. Release builds use HTTPS.
+- The base URL comes from build config: `BuildConfig.API_BASE_URL` (Android) and `ios/Config/Info-*.plist` (iOS).
+- Pin tool versions as ADR-008 says. Do not upgrade TypeScript, Kotlin or the Android libraries alone.
+
+## Working rules
+- Move a finished plan to `operations/archives/<date>-<phase>/` with a `summary.md`. Keep open plans in `operations/specs/`.
+- Record each new decision as an ADR in `docs/ADRs/`.
+- Do not claim a Docker build, a static scan or a hosted run passed. None has run yet.
+- Do not commit until the owner asks. Phases 1 to 3 are still uncommitted (TD-003).
+
+## Open items
+- ADR-001 (hosting provider) blocks phase 4.
+- Fix TD-001 (pool error listener) before the first hosted deploy.

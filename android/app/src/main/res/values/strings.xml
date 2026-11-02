@@ -1,3 +1,49 @@
 <resources>
     <string name="app_name">TaskManager</string>
+
+    <string name="list_title">Tasks</string>
+    <string name="add_task">Add task</string>
+    <string name="delete_task">Delete task</string>
+    <string name="empty_no_tasks">No tasks yet. Tap + to add one.</string>
+    <string name="empty_filtered">No tasks match these filters.</string>
+    <string name="clear_filters">Clear filters</string>
+    <string name="error_network">Cannot reach the server.</string>
+    <string name="try_again">Try again</string>
+
+    <string name="summary_total">Total</string>
+    <string name="summary_todo">To Do</string>
+    <string name="summary_in_progress">In Progress</string>
+    <string name="summary_done">Done</string>
+    <string name="summary_overdue">Overdue: %1$d</string>
+
+    <string name="filter_all">All</string>
+
+    <string name="overdue">Overdue</string>
+    <string name="row_description">%1$s, %2$s priority, %3$s, due %4$s</string>
+    <string name="row_description_overdue">%1$s, %2$s priority, %3$s, due %4$s, overdue</string>
+
+    <string name="form_new_title">New task</string>
+    <string name="form_edit_title">Edit task</string>
+    <string name="form_close">Close</string>
+    <string name="field_title">Title</string>
+    <string name="field_description">Description</string>
+    <string name="field_priority">Priority</string>
+    <string name="field_due_date">Due date</string>
+    <string name="title_counter">%1$d/%2$d</string>
+    <string name="title_required">Title is required</string>
+    <string name="title_too_long">Title must be 100 characters or fewer</string>
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
+    <string name="ok">OK</string>
+
+    <string name="delete_dialog_title">Delete task?</string>
+    <string name="delete_dialog_body">%1$s\nThis cannot be undone.</string>
+    <string name="delete">Delete</string>
+
+    <string name="message_created">Task created</string>
+    <string name="message_updated">Task updated</string>
+    <string name="message_deleted">Task deleted</string>
+    <string name="message_gone">Task no longer exists</string>
+    <string name="message_network">Cannot reach the server.</string>
+    <string name="message_server">Something went wrong. Try again.</string>
 </resources>

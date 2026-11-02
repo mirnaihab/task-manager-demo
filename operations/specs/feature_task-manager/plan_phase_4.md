@@ -5,7 +5,7 @@
 - **Date Created**: 2026-11-02
 - **Last Updated**: 2026-11-02
 - **Status**: Planned. Task TASK-P4-001 (provider decision) blocks all other tasks.
-- **Parent**: `operations/specs/task-manager-hld.md` (section 9 phase 4, ADR-001, risks R-1, R-2, R-4, R-5)
+- **Parent**: `docs/HLD.md` (section 9 phase 4, ADR-001, risks R-1, R-2, R-4, R-5)
 
 ---
 
@@ -139,7 +139,7 @@ Feature: Hosted deployment
 
 | ID | Task | File(s) | Responsibility or Expected Behaviors | Validations/Error handling | Key Configurations |
 |----|------|---------|--------------------------------------|----------------------------|--------------------|
-| TASK-P4-001 | Decide the provider (owner) | none | Owner confirms ADR-001 and accepts DES-P4-002 limits. Record the decision in `operations/specs/task-manager-hld.md` ADR-001. | Stop the phase until this is done. | Provider name |
+| TASK-P4-001 | Decide the provider (owner) | none | Owner confirms ADR-001 and accepts DES-P4-002 limits. Record the decision in `docs/HLD.md` ADR-001. | Stop the phase until this is done. | Provider name |
 | TASK-P4-002 | Prepare the repository | Git remote | Owner creates a hosted Git repository. Run `git remote add origin <url>` and push `main`. | `git ls-files \| grep -i '\.env$'` returns nothing before the push. | none |
 | TASK-P4-003 | Create hosted services | `render.yaml` (Render) or provider dashboard | Create the PostgreSQL database and the Docker web service from the `backend/` folder. Set health check path `/health`. Set `NODE_ENV=production`. The provider gives `PORT`. | Choose the region closest to the database. Put both in the same region. | `DATABASE_URL` as secret or `fromDatabase` link |
 | TASK-P4-004 | First deploy and smoke test | none | Trigger the deploy. Read the log: migration applied, server listening. Run the smoke commands in VER-P4-001 to 003. | If `/health` returns `503`, check `DATABASE_URL` and `sslmode`. | none |

@@ -1,38 +1,27 @@
-//
-//  TaskManagerTests.swift
-//  TaskManagerTests
-//
-//  Created by Mirna Ramzy (MiddleEast) on 02/11/2026.
-//
-
 import XCTest
 @testable import TaskManager
 
 final class TaskManagerTests: XCTestCase {
 
-    override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
+    /// REQ-315: the base URL comes from Info.plist.
+    func testREQ315_baseURLIsReadFromInfoPlist() throws {
+        let url = try XCTUnwrap(AppEnvironment.baseURL(bundle: .main))
+        XCTAssertEqual(url.absoluteString, "http://localhost:3000")
     }
 
-    override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
+    /// REQ-316: the launch argument picks the mock API.
+    func testREQ316_mockLaunchArgumentUsesMockAPI() {
+        let api = AppEnvironment.makeAPI(arguments: ["-UITestMock"], bundle: .main)
+        XCTAssertTrue(api is MockTaskAPI)
     }
 
-    func testExample() throws {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        // Any test you write for XCTest can be annotated as throws and async.
-        // Mark your test throws to produce an unexpected failure when your test encounters an uncaught error.
-        // Mark your test async to allow awaiting for asynchronous code to complete. Check the results with assertions afterwards.
-        // XCTest Documentation
-        // https://developer.apple.com/documentation/xctest
+    func testREQ315_withoutMockUsesNetworkAPI() {
+        let api = AppEnvironment.makeAPI(arguments: [], bundle: .main)
+        XCTAssertTrue(api is URLSessionTaskAPI)
     }
 
-    func testPerformanceExample() throws {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
-        }
+    func testDateConversionRoundTripsWithoutShift() throws {
+        let date = try XCTUnwrap(DateConversion.date(from: "2026-11-02"))
+        XCTAssertEqual(DateConversion.string(from: date), "2026-11-02")
     }
-
 }

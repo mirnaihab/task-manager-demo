@@ -3,9 +3,9 @@
 # Document Control
 - **Version**: 1.0
 - **Date Created**: 2026-11-02
-- **Last Updated**: 2026-11-02
-- **Status**: Planned
-- **Parent**: `operations/specs/task-manager-hld.md` (sections 3, 7, 8, roadmap phase 3)
+- **Last Updated**: 2026-11-03
+- **Status**: Done
+- **Parent**: `docs/HLD.md` (sections 3, 7, 8, roadmap phase 3)
 - **Design**: `DESIGN.md` (colors, type, components, screens). This plan does not repeat it.
 - **Peer**: `plan_phase_2.md` (Android). Both apps must show the same behavior. Use the same requirement meaning and the same UI text.
 
@@ -20,6 +20,8 @@
 - **Tech Stack**: Swift 5 mode (existing project setting), SwiftUI, `@Observable` (iOS 17), URLSession async/await, XCTest, XCUITest.
 - **Entry Condition**: Phase 1 is complete. The Xcode project builds. Phase 2 is not required. Both phases only need the Phase 1 contract.
 - **Exit Condition**: The `xcodebuild build` and `xcodebuild test` commands from `AGENTS.md` pass (unit and UI tests). A manual run on the simulator against the local backend passes all five stories.
+
+> **Build note (2026-11-03)**: `INFOPLIST_KEY_API_BASE_URL` did not reach the built plist (RISK-301). The DES-P3-006 fallback applies: `ios/Config/Info-Debug.plist` and `ios/Config/Info-Release.plist` set `API_BASE_URL`. Color assets `Primary` and `Secondary` are named `AppPrimary` and `AppSecondary` because the names clash with SwiftUI symbols. Test commands use `-parallel-testing-enabled NO`.
 
 ---
 

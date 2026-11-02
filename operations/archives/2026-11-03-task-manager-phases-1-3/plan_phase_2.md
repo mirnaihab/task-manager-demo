@@ -4,8 +4,8 @@
 - **Version**: 1.0
 - **Date Created**: 2026-11-02
 - **Last Updated**: 2026-11-02
-- **Status**: Planned
-- **Parent**: `operations/specs/task-manager-hld.md` (sections 3, 7, 8, roadmap phase 2)
+- **Status**: Done (2026-11-02). Library versions differ from the table: see Implementation notes.
+- **Parent**: `docs/HLD.md` (sections 3, 7, 8, roadmap phase 2)
 - **Design**: `DESIGN.md` (colors, type, components, screens). This plan does not repeat it.
 
 ---
@@ -393,3 +393,13 @@ Review step: a reviewer checks each requirement against its test and checks `DES
 - No logging of bodies or URLs with credentials.
 - No secrets in `BuildConfig`. The API has no key.
 - `allowBackup="false"`.
+
+---
+
+# Implementation notes (2026-11-02)
+
+- okhttp 5.5.1, kotlinx-serialization 1.12.0 and kotlinx-coroutines 1.11.0 need Kotlin 2.4 and compileSdk 37. The project uses Kotlin 2.2.10 and compileSdk 36.1. The build uses okhttp 5.1.0, kotlinx-serialization-json 1.9.0 and kotlinx-coroutines 1.10.2 instead.
+- Added `material-icons-core` (BOM managed) for the icons.
+- Raised `espressoCore` to 3.7.0 and `junitVersion` (androidx.test.ext) to 1.3.0. The old versions crash on the API 37 emulator (`InputManager.getInstance`).
+- The shared fake source set uses `kotlin.directories` (AGP 9 built-in Kotlin).
+- DESIGN.md has no dark values for secondary, on-surface-variant, outline-strong, success, warning and info. The dark theme uses derived values, marked "derived" in `Color.kt`.

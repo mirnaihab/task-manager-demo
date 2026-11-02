@@ -4,8 +4,8 @@
 - **Version**: 1.0
 - **Date Created**: 2026-11-02
 - **Last Updated**: 2026-11-02
-- **Status**: Planned
-- **Parent**: `operations/specs/task-manager-hld.md` (sections 3 to 6, roadmap phase 1)
+- **Status**: Done (2026-11-02). Dockerfile not built: Docker is not installed.
+- **Parent**: `docs/HLD.md` (sections 3 to 6, roadmap phase 1)
 
 ---
 
