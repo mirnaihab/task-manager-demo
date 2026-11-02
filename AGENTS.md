@@ -87,6 +87,17 @@ If you haven't run the verification command in this message, you cannot claim it
 # Project: Task Manager
 
 Requirements, stack decisions and the deployment requirement are in `docs/user-stories.md`.
+High level design: `operations/specs/task-manager-hld.md`. UI rules: `DESIGN.md`.
+
+## Plans
+Build in this order. Phases 2 and 3 can run in parallel after phase 1.
+
+| Phase | Plan | Status |
+|---|---|---|
+| 1 Backend API and database | `operations/specs/feature_task-manager/plan_phase_1.md` | Planned |
+| 2 Android app | `operations/specs/feature_task-manager/plan_phase_2.md` | Planned |
+| 3 iOS app | `operations/specs/feature_task-manager/plan_phase_3.md` | Planned |
+| 4 Hosting, release, docs | `operations/specs/feature_task-manager/plan_phase_4.md` | Planned. Needs the hosting decision (ADR-001). |
 
 ## Structure
 - `backend/`: Node.js + TypeScript REST API. Not created yet.

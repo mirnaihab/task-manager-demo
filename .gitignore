@@ -12,3 +12,7 @@ node_modules/
 
 # Workflow engine run state
 operations/runs/
+
+# Backend
+.env
+dist/
