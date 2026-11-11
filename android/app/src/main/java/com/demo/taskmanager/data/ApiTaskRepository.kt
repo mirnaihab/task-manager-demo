@@ -57,6 +57,7 @@ class ApiTaskRepository(
 
     // Only the error code and the field messages leave this class. The raw body never does.
     private fun Response<*>.toApiError(): ApiError {
+        if (code() in GATEWAY_CODES) return ApiError.Unavailable()
         val envelope = try {
             errorBody()?.string()?.let { json.decodeFromString<ErrorEnvelope>(it) }
         } catch (_: SerializationException) {
@@ -72,6 +73,8 @@ class ApiTaskRepository(
         }
     }
 }
+
+private val GATEWAY_CODES = setOf(502, 503, 504)
 
 private fun TaskDto.toDomain() = Task(id, title, description, priority, status, dueDate, overdue)
 

@@ -117,6 +117,7 @@ Statuses: `TODO`, `IN_PROGRESS`, `DONE`. Priorities: `LOW`, `MEDIUM`, `HIGH`. Da
 | [docs/HLD.md](docs/HLD.md) | Architecture and design. |
 | [docs/ADRs/](docs/ADRs/) | Architecture decisions. |
 | [docs/technical-debt.md](docs/technical-debt.md) | Known issues. |
+| [docs/project-analysis.md](docs/project-analysis.md) | Step by step build report with token use and cost. |
 | [DESIGN.md](DESIGN.md) | UI rules for both apps. |
 | [operations/archives/](operations/archives/) | Finished plans and phase summaries. |
 | [operations/specs/](operations/specs/) | Open plans. |

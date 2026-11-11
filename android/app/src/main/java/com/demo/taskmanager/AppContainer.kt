@@ -20,7 +20,8 @@ class AppContainer(baseUrl: String = BuildConfig.API_BASE_URL) {
     // No logging interceptor: request and response bodies must not reach the log (SEC-202).
     private val client = OkHttpClient.Builder()
         .connectTimeout(10, TimeUnit.SECONDS)
-        .readTimeout(15, TimeUnit.SECONDS)
+        // 90 s lets a sleeping free host wake while the proxy holds the request (DES-P4-012).
+        .readTimeout(90, TimeUnit.SECONDS)
         .build()
 
     private val api: TaskApi = Retrofit.Builder()

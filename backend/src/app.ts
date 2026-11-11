@@ -16,7 +16,7 @@ export interface AppDeps {
 
 // Logs method, path, status and duration only. Never the body (SEC-004).
 const requestLog: RequestHandler = (req, res, next) => {
-  if (req.path === '/health') {
+  if (req.path.startsWith('/health')) {
     next();
     return;
   }

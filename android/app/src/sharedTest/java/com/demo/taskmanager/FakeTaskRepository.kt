@@ -18,6 +18,7 @@ class FakeTaskRepository(
     private val tasks = initial.toMutableList()
     private var nextId = 1
     private var nextFailure: ApiError? = null
+    private var failuresLeft = 0
 
     /** Names of the calls received so far, for example "create" or "setStatus". */
     val calls = mutableListOf<String>()
@@ -25,8 +26,9 @@ class FakeTaskRepository(
     /** When set, mutation calls wait until the deferred completes. */
     var gate: CompletableDeferred<Unit>? = null
 
-    fun failNext(error: ApiError) {
+    fun failNext(error: ApiError, times: Int = 1) {
         nextFailure = error
+        failuresLeft = times
     }
 
     override suspend fun list(filters: TaskFilters): List<Task> {
@@ -94,7 +96,7 @@ class FakeTaskRepository(
     private fun record(name: String) {
         calls.add(name)
         nextFailure?.let {
-            nextFailure = null
+            if (--failuresLeft <= 0) nextFailure = null
             throw it
         }
     }

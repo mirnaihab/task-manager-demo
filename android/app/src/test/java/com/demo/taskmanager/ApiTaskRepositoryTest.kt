@@ -175,6 +175,20 @@ class ApiTaskRepositoryTest {
     }
 
     @Test
+    fun gatewayStatusesMapToUnavailable() {
+        for (code in listOf(502, 503, 504)) {
+            enqueue(code, "<html>Service Unavailable</html>")
+            assertTrue("status $code", failure { repository.list(TaskFilters()) } is ApiError.Unavailable)
+        }
+    }
+
+    @Test
+    fun error500_staysServerNotUnavailable() {
+        enqueue(500, "")
+        assertTrue(failure { repository.list(TaskFilters()) } is ApiError.Server)
+    }
+
+    @Test
     fun droppedConnectionMapsToNetwork() {
         server.enqueue(MockResponse().setSocketPolicy(SocketPolicy.DISCONNECT_AFTER_REQUEST))
         assertTrue(failure { repository.list(TaskFilters()) } is ApiError.Network)

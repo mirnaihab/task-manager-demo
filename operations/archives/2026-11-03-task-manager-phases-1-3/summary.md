@@ -55,5 +55,5 @@ Each decision below has an ADR in `docs/ADRs/`. The source is the archived plan.
 ## Open items carried forward
 
 - ADR-001 hosting decision blocks phase 4.
-- Changes are not committed.
+- Changes were not committed at archive time. They are committed in `2caef5b`.
 - See `docs/technical-debt.md`.

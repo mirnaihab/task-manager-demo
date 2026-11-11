@@ -8,6 +8,7 @@
     <string name="empty_filtered">No tasks match these filters.</string>
     <string name="clear_filters">Clear filters</string>
     <string name="error_network">Cannot reach the server.</string>
+    <string name="waking_message">Waking up the server. This can take up to a minute.</string>
     <string name="try_again">Try again</string>
 
     <string name="summary_total">Total</string>

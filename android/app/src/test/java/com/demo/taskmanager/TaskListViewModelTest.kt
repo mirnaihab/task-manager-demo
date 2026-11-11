@@ -14,8 +14,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
@@ -305,5 +307,76 @@ class TaskListViewModelTest {
         advanceUntilIdle()
         assertEquals(Phase.Content, vm.state.value.phase)
         assertEquals(1, vm.state.value.tasks.size)
+    }
+
+    // Cold start (REQ-408 to REQ-411). Delays run in virtual time, so these tests do not wait.
+    private val FakeTaskRepository.listCalls get() = calls.count { it == "list" }
+
+    @Test
+    fun req408_unavailableLoadRetriesUntilTheServerAnswers() = runTest(dispatcher) {
+        val repo = FakeTaskRepository(listOf(task("1")))
+        repo.failNext(ApiError.Unavailable(), times = 3)
+        val vm = viewModel(repo)
+        assertEquals(Phase.Content, vm.state.value.phase)
+        assertEquals(1, vm.state.value.tasks.size)
+        assertEquals(4, repo.listCalls)
+    }
+
+    @Test
+    fun req411_unavailableForTheWholeBudgetEndsInTheErrorState() = runTest(dispatcher) {
+        val repo = FakeTaskRepository()
+        repo.failNext(ApiError.Unavailable(), times = 1_000)
+        val vm = viewModel(repo)
+        assertEquals(Phase.Error, vm.state.value.phase)
+        assertFalse(vm.state.value.isWaking)
+        assertEquals(19, repo.listCalls)
+    }
+
+    @Test
+    fun edgeP4003_offlineFailsAtOnceWithoutRetry() = runTest(dispatcher) {
+        val repo = FakeTaskRepository()
+        repo.failNext(ApiError.Network(), times = 1_000)
+        val vm = viewModel(repo)
+        assertEquals(Phase.Error, vm.state.value.phase)
+        assertEquals(1, repo.listCalls)
+    }
+
+    @Test
+    fun req409_hintShowsAfterFourSecondsAndClearsWhenTheListLoads() = runTest(dispatcher) {
+        val repo = FakeTaskRepository(listOf(task("1")))
+        repo.failNext(ApiError.Unavailable(), times = 3)
+        val vm = TaskListViewModel(repo, dispatcher) { FakeTaskRepository.TODAY }
+        advanceTimeBy(3_999)
+        runCurrent()
+        assertFalse(vm.state.value.isWaking)
+        advanceTimeBy(2)
+        runCurrent()
+        assertTrue(vm.state.value.isWaking)
+        assertEquals(Phase.Loading, vm.state.value.phase)
+        advanceUntilIdle()
+        assertFalse(vm.state.value.isWaking)
+        assertEquals(Phase.Content, vm.state.value.phase)
+    }
+
+    @Test
+    fun req409_noHintWhenTheLoadIsFast() = runTest(dispatcher) {
+        val vm = viewModel(FakeTaskRepository(listOf(task("1"))))
+        advanceTimeBy(10_000)
+        runCurrent()
+        assertFalse(vm.state.value.isWaking)
+    }
+
+    @Test
+    fun req410_unavailableWriteIsNotRetried() = runTest(dispatcher) {
+        val repo = FakeTaskRepository()
+        val vm = viewModel(repo)
+        vm.openCreate()
+        vm.updateDraft(validDraft)
+        repo.failNext(ApiError.Unavailable(), times = 1_000)
+        vm.save()
+        advanceUntilIdle()
+        assertEquals(1, repo.calls.count { it == "create" })
+        assertNotNull(vm.state.value.form)
+        assertEquals(UiMessage.NetworkError, vm.state.value.message)
     }
 }

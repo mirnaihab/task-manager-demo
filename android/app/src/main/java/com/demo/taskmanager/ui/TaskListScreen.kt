@@ -76,9 +76,7 @@ fun TaskListScreen(state: UiState, snackbarHost: SnackbarHostState, actions: Tas
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
             when (state.phase) {
-                Phase.Loading -> CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center).testTag("loading"),
-                )
+                Phase.Loading -> LoadingState(state.isWaking)
                 Phase.Error -> ErrorState(actions.onRetry)
                 Phase.Content -> TaskList(state, actions)
             }
@@ -148,6 +146,26 @@ private fun EmptyState(filtersActive: Boolean, onClearFilters: () -> Unit) {
         )
         if (filtersActive) {
             TextButton(onClick = onClearFilters) { Text(stringResource(R.string.clear_filters)) }
+        }
+    }
+}
+
+@Composable
+private fun LoadingState(isWaking: Boolean) {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(Spacing.lg),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        CircularProgressIndicator(modifier = Modifier.testTag("loading"))
+        if (isWaking) {
+            Text(
+                text = stringResource(R.string.waking_message),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(top = Spacing.md).testTag("waking-hint"),
+            )
         }
     }
 }

@@ -16,7 +16,7 @@ None.
 | ID | Item | Effort | Mitigation |
 |---|---|---|---|
 | TD-002 | `backend/Dockerfile` is written but never built. Docker is not installed on the dev machine. | M | Build the image on the host in phase 4 (TASK-P4). Run `/health` against the container. |
-| TD-003 | All phase 1 to 3 work is uncommitted. | S | Commit in reviewable groups (backend, android, ios, docs) after the owner approves. |
+| TD-003 | Fixed 2026-11-03. Phases 1 to 3 are committed in `2caef5b`. | S | None. |
 
 ## Medium
 
@@ -43,9 +43,9 @@ None.
 | Severity | Items |
 |---|---|
 | Critical | 0 |
-| High | 2 |
+| High | 1 |
 | Medium | 5 |
 | Low | 5 |
-| Total | 12 |
+| Total | 11 |
 
-Fixed: TD-001 on 2026-11-03. `createPool` now logs pool errors with `logger.error`. Test: `backend/test/db.test.ts`.
+Fixed: TD-003 on 2026-11-03 (commit `2caef5b`). TD-001 on 2026-11-03. `createPool` now logs pool errors with `logger.error`. Test: `backend/test/db.test.ts`.

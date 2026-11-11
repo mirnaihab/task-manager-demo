@@ -17,6 +17,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -167,19 +168,43 @@ class TaskListViewModel(
     private fun launchLoad(showErrorState: Boolean) {
         loadJob?.cancel()
         loadJob = viewModelScope.launch(dispatcher) {
-            _state.update { it.copy(isRefreshing = true) }
+            _state.update { it.copy(isRefreshing = true, isWaking = false) }
+            val hint = if (showErrorState) launch { showWakingHintAfterDelay() } else null
             try {
-                val (tasks, summary) = fetch(_state.value.filters)
+                val (tasks, summary) =
+                    if (showErrorState) fetchUntilAwake() else fetch(_state.value.filters)
                 _state.update {
-                    it.copy(tasks = tasks, summary = summary, phase = Phase.Content, isRefreshing = false)
+                    it.copy(
+                        tasks = tasks, summary = summary, phase = Phase.Content,
+                        isRefreshing = false, isWaking = false,
+                    )
                 }
             } catch (e: ApiError) {
                 _state.update {
-                    if (showErrorState) it.copy(phase = Phase.Error, isRefreshing = false)
+                    if (showErrorState) it.copy(phase = Phase.Error, isRefreshing = false, isWaking = false)
                     else it.copy(isRefreshing = false, message = e.toMessage())
                 }
+            } finally {
+                hint?.cancel()
             }
         }
+    }
+
+    private suspend fun showWakingHintAfterDelay() {
+        delay(WAKE_HINT_DELAY_MS)
+        _state.update { it.copy(isWaking = it.phase == Phase.Loading) }
+    }
+
+    /** Retries only on Unavailable, for about 90 s. Offline and server errors fail at once. */
+    private suspend fun fetchUntilAwake(): Pair<List<Task>, Summary> {
+        repeat(WAKE_MAX_RETRIES) {
+            try {
+                return fetch(_state.value.filters)
+            } catch (_: ApiError.Unavailable) {
+                delay(WAKE_RETRY_DELAY_MS)
+            }
+        }
+        return fetch(_state.value.filters)
     }
 
     private suspend fun fetch(filters: TaskFilters): Pair<List<Task>, Summary> = coroutineScope {
@@ -198,11 +223,16 @@ class TaskListViewModel(
         map { if (it.id == task.id) task else it }
 
     private fun ApiError.toMessage(): UiMessage = when (this) {
-        is ApiError.Network -> UiMessage.NetworkError
+        is ApiError.Network, is ApiError.Unavailable -> UiMessage.NetworkError
         else -> UiMessage.ServerError
     }
 
     companion object {
+        // Free-host cold start handling (DES-P4-011). One place to tune after TASK-P4-009.
+        const val WAKE_HINT_DELAY_MS = 4_000L
+        const val WAKE_RETRY_DELAY_MS = 5_000L
+        const val WAKE_MAX_RETRIES = 18
+
         fun factory(repository: TaskRepository): ViewModelProvider.Factory =
             object : ViewModelProvider.Factory {
                 @Suppress("UNCHECKED_CAST")

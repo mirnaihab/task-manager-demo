@@ -126,6 +126,7 @@ Calm, flat and text-first. The screen shows one thing at a time: the list. A war
 - **Do** show an empty state with one sentence and, when filters are active, a `Clear filters` button.
 - **Do** show field errors under the field, in the field's own position, from the API `fields` map.
 - **Do** show a loading indicator on first load and keep old data on screen during a refresh.
+- **Do** show `Waking up the server. This can take up to a minute.` under the first-load indicator when the load takes longer than 4 seconds. Use `body-md` and `on-surface-variant`.
 - **Do** write labels in sentence case: `To Do`, `In Progress`, `Done`, `Low`, `Medium`, `High`.
 - **Don't** use red for anything except overdue and errors.
 - **Don't** put color-only meaning in the UI.
@@ -144,6 +145,7 @@ Calm, flat and text-first. The screen shows one thing at a time: the list. A war
 
 - **Press**: ripple on Android, highlight on iOS. Do not remove it.
 - **Focus**: 2 px `primary` outline on inputs and chips for keyboard and switch access.
+- **Slow first load (free host asleep)**: after 4 seconds the first-load screen adds one centered line under the indicator: `Waking up the server. This can take up to a minute.` The line disappears when the list or the error state shows. The app retries by itself for up to 90 seconds, then shows the network error state.
 - **Loading**: a circular indicator in the center on first load. A thin linear indicator at the top for refresh. The Save button shows a small spinner and is disabled while saving.
 - **Optimistic status change**: the row updates at once. On failure the row reverts and a snackbar shows the error.
 - **Animation**: 150 to 200 ms ease-out for chip selection, row removal and the snackbar. Respect the system reduce-motion setting.

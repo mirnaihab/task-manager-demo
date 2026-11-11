@@ -27,6 +27,8 @@ data class UiState(
     val summary: Summary = Summary(),
     val phase: Phase = Phase.Loading,
     val isRefreshing: Boolean = false,
+    /** True when the first load runs longer than the hint delay. The screen shows a waking message. */
+    val isWaking: Boolean = false,
     val form: FormState? = null,
     val pendingDelete: Task? = null,
     val message: UiMessage? = null,

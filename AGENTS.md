@@ -99,7 +99,7 @@ Build in this order. Phases 2 and 3 can run in parallel after phase 1.
 | 1 Backend API and database | `operations/archives/2026-11-03-task-manager-phases-1-3/plan_phase_1.md` | Done |
 | 2 Android app | `operations/archives/2026-11-03-task-manager-phases-1-3/plan_phase_2.md` | Done |
 | 3 iOS app | `operations/archives/2026-11-03-task-manager-phases-1-3/plan_phase_3.md` | Done |
-| 4 Hosting, release, docs | `operations/specs/feature_task-manager/plan_phase_4.md` | Planned. Needs the hosting decision (ADR-001). |
+| 4 Hosting, release, docs | `operations/specs/feature_task-manager/plan_phase_4.md` | Planned. Hosting chosen: Render free (Docker) and Neon free. Includes cold start handling in both apps. |
 
 ## Structure
 - `backend/`: Node.js + TypeScript REST API.
@@ -136,8 +136,9 @@ Run the backend commands in `backend/`. Backend tests need the `taskmanager_test
 - Move a finished plan to `operations/archives/<date>-<phase>/` with a `summary.md`. Keep open plans in `operations/specs/`.
 - Record each new decision as an ADR in `docs/ADRs/`.
 - Do not claim a Docker build, a static scan or a hosted run passed. None has run yet.
-- Do not commit until the owner asks. Phases 1 to 3 are still uncommitted (TD-003).
+- Do not commit until the owner asks. Phases 1 to 3 are committed (TD-003 closed).
 
 ## Open items
-- ADR-001 (hosting provider) blocks phase 4.
+- ADR-001 is decided (Render and Neon). The doc update to "Accepted" is a phase 4 task.
+- Phase 4 needs the owner for the Neon and Render accounts, the `git push` and the iOS signing team.
 - TD-001 (pool error listener) is fixed. The pool logs idle client errors.

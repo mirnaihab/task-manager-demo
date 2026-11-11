@@ -5,6 +5,9 @@ sealed class ApiError(message: String) : Exception(message) {
     class NotFound : ApiError("Task not found")
     class Server : ApiError("Server error")
     class Network : ApiError("Network error")
+
+    /** The gateway (HTTP 502, 503, 504) has no running API behind it. The free host may be asleep. */
+    class Unavailable : ApiError("Server unavailable")
 }
 
 interface TaskRepository {

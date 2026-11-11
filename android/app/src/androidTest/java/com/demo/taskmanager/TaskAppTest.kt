@@ -197,6 +197,20 @@ class TaskAppTest {
     }
 
     @Test
+    fun slowFirstLoadShowsWakingHintThenTheList() {
+        val repository = FakeTaskRepository(listOf(task("1")))
+        repository.failNext(ApiError.Unavailable())
+        val viewModel = TaskListViewModel(repository, Dispatchers.Main.immediate) { FakeTaskRepository.TODAY }
+        rule.setContent { TaskManagerTheme { TaskApp(viewModel) } }
+        rule.onAllNodes(hasTestTag("waking-hint")).assertCountEquals(0)
+        rule.waitUntil(8_000) { rule.onAllNodesWithTagCount("waking-hint") == 1 }
+        rule.onNodeWithText("Waking up the server. This can take up to a minute.").assertIsDisplayed()
+        rule.waitUntil(10_000) { rule.onAllNodesWithTagCount("loading") == 0 }
+        waitForText("Task 1")
+        rule.onAllNodes(hasTestTag("waking-hint")).assertCountEquals(0)
+    }
+
+    @Test
     fun saveButtonIsDisabledWhileSaving() {
         val repository = FakeTaskRepository().apply { gate = CompletableDeferred() }
         launch(repository)

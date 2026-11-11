@@ -21,6 +21,10 @@ describe('createPool error handling (TD-001)', () => {
     expect(pool.listenerCount('error')).toBe(1);
   });
 
+  it('REQ-412 sets a 10 second connect timeout', () => {
+    expect((pool as unknown as { options: pg.PoolConfig }).options.connectionTimeoutMillis).toBe(10_000);
+  });
+
   it('logs a pool error and does not throw', () => {
     const logError = vi.spyOn(logger, 'error').mockImplementation(() => undefined);
     const error = new Error('connection terminated');
